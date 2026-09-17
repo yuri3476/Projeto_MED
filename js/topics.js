@@ -58,6 +58,9 @@ export function openTopicModal(topicId){
   const prioSelect = el('f-prio');
   if(prioSelect) prioSelect.value = topic ? (topic.prio || 'alta') : 'alta';
 
+  const dateInput = el('f-next-date');
+  if(dateInput) dateInput.value = topic ? topic.nextDate : todayISO();
+
   openOverlay('overlay');
   setTimeout(() => nameInput && nameInput.focus(), 50);
 }
@@ -71,23 +74,25 @@ export async function saveTopic(){
   const nameInput = el('f-name');
   const catSelect = el('f-cat');
   const prioSelect = el('f-prio');
+  const dateInput = el('f-next-date');
   if(!nameInput || !catSelect || !prioSelect) return;
 
   const name = nameInput.value.trim();
   if(!name) return;
   const cat = catSelect.value;
   const prio = prioSelect.value;
+  const nextDate = (dateInput && dateInput.value) ? dateInput.value : todayISO();
 
   if(state.editingTopicId){
     const topic = state.topics.find(t => t.id === state.editingTopicId);
-    if(topic){ topic.name = name; topic.cat = cat; topic.prio = prio; }
+    if(topic){ topic.name = name; topic.cat = cat; topic.prio = prio; topic.nextDate = nextDate; }
   } else {
     state.topics.push({
       id: randomId('t'),
       name, cat, prio,
       history: [],
       notes: '',
-      nextDate: todayISO(),
+      nextDate,
       createdAt: todayISO()
     });
   }
