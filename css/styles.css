@@ -227,6 +227,29 @@ h1{font-family:'Source Serif 4',serif;font-weight:600;font-size:29px;margin:0 0 
 .or-divider{display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:12px;margin:16px 0;}
 .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border);}
 
+/* editor de anotações com formatação (negrito, itálico, sublinhado, marca-texto) */
+.notes-toolbar{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  margin-bottom:8px;
+}
+.notes-tool-btn{
+  background:var(--field-bg);border:1px solid var(--border);color:var(--text);
+  border-radius:7px;padding:7px 12px;font-size:13px;font-family:'Inter',sans-serif;
+  cursor:pointer;transition:background .12s, border-color .12s;
+}
+.notes-tool-btn:hover{border-color:var(--border-strong);background:var(--surface-hover);}
+.notes-tool-highlight{background:#fdf2b8;border-color:#eadd93;color:#6b5d1f;}
+.notes-tool-highlight:hover{background:#fbe98f;}
+.notes-tool-divider{width:1px;height:22px;background:var(--border);margin:0 2px;}
+.notes-editable{
+  width:100%;min-height:280px;max-height:420px;overflow-y:auto;
+  background:var(--field-bg);border:1px solid var(--border);color:var(--text);
+  padding:13px 15px;border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;line-height:1.55;
+}
+.notes-editable:focus{outline:none;border-color:var(--sage);}
+.notes-editable:empty::before{content:attr(data-placeholder);color:var(--text-muted);}
+.notes-editable mark, .notes-editable span[style*="background-color"]{border-radius:2px;padding:0 1px;}
+
 /* =============================================================================
    RESPONSIVO — tablets e celulares
    Duas faixas: 780px (a barra lateral vira uma faixa horizontal no topo) e

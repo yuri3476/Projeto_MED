@@ -8,7 +8,7 @@
  */
 import { state } from './state.js';
 import { PRIO_LABEL, PRIO_ORDER, STATUS_TITLES, MASTERY_PERFECT_SCORES_REQUIRED } from './config.js';
-import { todayISO, addDays, fmtDate, intervalForScore, escapeHtml, icon, randomId } from './utils.js';
+import { todayISO, addDays, fmtDate, intervalForScore, escapeHtml, icon, randomId, stripHtml } from './utils.js';
 import { el, setText, setHtml } from './dom.js';
 import { openOverlay, closeOverlay } from './modal.js';
 import { persistAll } from './firebase-sync.js';
@@ -249,7 +249,7 @@ function topicRowHtml(topic){
     ? `<span class="done-check">${icon('emdia')} Concluído</span>`
     : `<button class="btn-review ${status === 'atrasado' ? 'urgent' : ''}" onclick="openReviewModal('${topic.id}')">Revisar</button>`;
 
-  const hasNotes = !!(topic.notes && topic.notes.trim());
+  const hasNotes = !!stripHtml(topic.notes).trim();
   const categoryTag = topic.cat
     ? `<span class="tag"><span class="tag-dot" style="background:${colorForCategory(topic.cat)}"></span>${escapeHtml(topic.cat)}</span>`
     : '';

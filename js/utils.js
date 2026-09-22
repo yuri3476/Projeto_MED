@@ -49,3 +49,48 @@ export function icon(name, extraClass = ''){
 export function randomId(prefix){
   return `${prefix}${Date.now()}${Math.random().toString(36).slice(2, 7)}`;
 }
+
+/* ---------------------------------------------------------------------------
+   Texto formatado das anotações (negrito, itálico, marca-texto). Guardamos
+   como HTML simples, então precisamos de dois cuidados:
+   - saber se "está vazio" olhando só o texto, não as tags
+   - limpar qualquer tag/atributo que não seja de formatação de texto, para
+     não abrir brecha de segurança caso o mesmo código de sincronização seja
+     usado em mais de um lugar
+--------------------------------------------------------------------------- */
+
+export function stripHtml(html){
+  const container = document.createElement('div');
+  container.innerHTML = html || '';
+  return container.textContent || '';
+}
+
+const ALLOWED_RICH_TEXT_TAGS = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'SPAN', 'BR', 'DIV', 'P']);
+
+export function sanitizeRichText(html){
+  const template = document.createElement('template');
+  template.innerHTML = html || '';
+
+  function clean(parent){
+    [...parent.childNodes].forEach(node => {
+      if(node.nodeType === Node.ELEMENT_NODE){
+        if(!ALLOWED_RICH_TEXT_TAGS.has(node.tagName)){
+          // tag não permitida: mantém o texto/filhos, descarta só a tag em si
+          while(node.firstChild) parent.insertBefore(node.firstChild, node);
+          parent.removeChild(node);
+          return;
+        }
+        // remove todo atributo, exceto a cor de fundo do marca-texto
+        const backgroundColor = node.style.backgroundColor;
+        [...node.attributes].forEach(attr => node.removeAttribute(attr.name));
+        if(backgroundColor) node.style.backgroundColor = backgroundColor;
+        clean(node);
+      } else if(node.nodeType !== Node.TEXT_NODE){
+        parent.removeChild(node); // comentários etc.
+      }
+    });
+  }
+
+  clean(template.content);
+  return template.innerHTML;
+}

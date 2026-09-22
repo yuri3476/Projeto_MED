@@ -1,14 +1,20 @@
 /**
  * notes.js
  * ---------------------------------------------------------------------------
- * Modal de anotações por tema. Abre pré-preenchido com o texto salvo e só
- * grava quando o usuário clica em "Salvar anotações".
+ * Modal de anotações por tema, com formatação de texto (negrito, itálico,
+ * sublinhado e marca-texto). O conteúdo é guardado como HTML simples — por
+ * isso tudo passa por sanitizeRichText antes de ser salvo ou reaberto, para
+ * garantir que só sobrevivem tags de formatação de texto, nunca scripts ou
+ * atributos perigosos.
  * ---------------------------------------------------------------------------
  */
 import { state } from './state.js';
 import { el } from './dom.js';
 import { openOverlay, closeOverlay } from './modal.js';
 import { persistAll } from './firebase-sync.js';
+import { sanitizeRichText } from './utils.js';
+
+const HIGHLIGHT_COLOR = '#fdf2b8';
 
 export function openNotesModal(topicId){
   const topic = state.topics.find(t => t.id === topicId);
@@ -16,12 +22,12 @@ export function openNotesModal(topicId){
 
   state.notesTargetId = topicId;
   const nameEl = el('notes-topic-name');
-  const textarea = el('f-notes');
+  const editor = el('f-notes');
   if(nameEl) nameEl.textContent = topic.name;
-  if(textarea) textarea.value = topic.notes || '';
+  if(editor) editor.innerHTML = sanitizeRichText(topic.notes || '');
 
   openOverlay('notes-overlay');
-  setTimeout(() => textarea && textarea.focus(), 50);
+  setTimeout(() => editor && editor.focus(), 50);
 }
 
 export function closeNotesModal(){
@@ -32,8 +38,29 @@ export function closeNotesModal(){
 export async function saveNotes(){
   const topic = state.topics.find(t => t.id === state.notesTargetId);
   if(!topic) return;
-  const textarea = el('f-notes');
-  topic.notes = textarea ? textarea.value : '';
+  const editor = el('f-notes');
+  topic.notes = editor ? sanitizeRichText(editor.innerHTML) : '';
   closeNotesModal();
   await persistAll();
+}
+
+/* ---------------------------------------------------------------------------
+   Barra de formatação. document.execCommand ainda é a forma mais simples e
+   amplamente suportada de aplicar negrito/itálico/sublinhado/cor num trecho
+   selecionado dentro de um contenteditable.
+--------------------------------------------------------------------------- */
+
+export function formatNotes(command, value){
+  const editor = el('f-notes');
+  if(!editor) return;
+  editor.focus();
+  document.execCommand(command, false, value ?? null);
+}
+
+export function highlightNotes(){
+  formatNotes('backColor', HIGHLIGHT_COLOR);
+}
+
+export function clearNotesFormatting(){
+  formatNotes('removeFormat');
 }
