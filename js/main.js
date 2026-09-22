@@ -29,7 +29,7 @@ import {
 import {
   openCategoryModal, closeCategoryModal, pickCategorySwatch, saveCategory, deleteCategory
 } from './categories.js';
-import { openNotesModal, closeNotesModal, saveNotes, formatNotes, highlightNotes, clearNotesFormatting, saveNotesSelection, applyCustomHighlight } from './notes.js';
+import { openNotesModal, closeNotesModal, saveNotes, formatNotes, highlightNotes, clearNotesFormatting, saveNotesSelection, applyCustomHighlight, toggleHighlightPicker, closeHighlightPicker } from './notes.js';
 import {
   renderCronograma, renderCronogramaSidebar,
   selectWeek, prevWeek, nextWeek,
@@ -77,7 +77,7 @@ Object.assign(window, {
   // categorias
   openCategoryModal, closeCategoryModal, pickCategorySwatch, saveCategory: () => saveCategory(onCategoryCreated), deleteCategory,
   // anotações
-  openNotesModal, closeNotesModal, saveNotes, formatNotes, highlightNotes, clearNotesFormatting, saveNotesSelection, applyCustomHighlight,
+  openNotesModal, closeNotesModal, saveNotes, formatNotes, highlightNotes, clearNotesFormatting, saveNotesSelection, applyCustomHighlight, toggleHighlightPicker, closeHighlightPicker,
   // cronograma
   selectWeek, prevWeek, nextWeek,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
@@ -118,6 +118,14 @@ const OVERLAYS_WITH_BACKDROP_DISMISS = [
   ['week-overlay', closeWeekModal]
 ];
 OVERLAYS_WITH_BACKDROP_DISMISS.forEach(([id, close]) => wireOverlayBackdropDismiss(id, close));
+
+// o painel de cores do marca-texto fecha ao clicar fora dele
+document.addEventListener('click', (event) => {
+  const wrap = document.querySelector('.notes-highlight-wrap');
+  if(wrap && !wrap.contains(event.target)){
+    closeHighlightPicker();
+  }
+});
 
 document.getElementById('search')?.addEventListener('input', renderTopics);
 document.getElementById('f-score')?.addEventListener('input', e => { e.target.style.borderColor = 'var(--border)'; });

@@ -25,6 +25,7 @@ export function openNotesModal(topicId){
   const editor = el('f-notes');
   if(nameEl) nameEl.textContent = topic.name;
   if(editor) editor.innerHTML = sanitizeRichText(topic.notes || '');
+  closeHighlightPicker();
 
   openOverlay('notes-overlay');
   setTimeout(() => editor && editor.focus(), 50);
@@ -58,7 +59,24 @@ export function formatNotes(command, value){
 }
 
 export function highlightNotes(color){
-  formatNotes('backColor', color || HIGHLIGHT_COLOR);
+  const chosen = color || HIGHLIGHT_COLOR;
+  formatNotes('backColor', chosen);
+  updateHighlightDot(chosen);
+  closeHighlightPicker();
+}
+
+function updateHighlightDot(color){
+  const dot = el('highlight-trigger-dot');
+  if(dot) dot.style.background = color;
+}
+
+export function toggleHighlightPicker(){
+  const popover = el('highlight-popover');
+  if(popover) popover.classList.toggle('open');
+}
+export function closeHighlightPicker(){
+  const popover = el('highlight-popover');
+  if(popover) popover.classList.remove('open');
 }
 
 /* ---------------------------------------------------------------------------
@@ -86,6 +104,7 @@ export function applyCustomHighlight(color){
     selection.addRange(savedSelectionRange);
   }
   document.execCommand('backColor', false, color);
+  updateHighlightDot(color);
 }
 
 export function clearNotesFormatting(){
