@@ -65,7 +65,7 @@ export function stripHtml(html){
   return container.textContent || '';
 }
 
-const ALLOWED_RICH_TEXT_TAGS = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'SPAN', 'BR', 'DIV', 'P']);
+const ALLOWED_RICH_TEXT_TAGS = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'SPAN', 'BR', 'DIV', 'P', 'UL', 'OL', 'LI']);
 
 export function sanitizeRichText(html){
   const template = document.createElement('template');

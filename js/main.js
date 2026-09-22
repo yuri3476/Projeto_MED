@@ -29,7 +29,7 @@ import {
 import {
   openCategoryModal, closeCategoryModal, pickCategorySwatch, saveCategory, deleteCategory
 } from './categories.js';
-import { openNotesModal, closeNotesModal, saveNotes, formatNotes, highlightNotes, clearNotesFormatting } from './notes.js';
+import { openNotesModal, closeNotesModal, saveNotes, formatNotes, highlightNotes, clearNotesFormatting, saveNotesSelection, applyCustomHighlight } from './notes.js';
 import {
   renderCronograma, renderCronogramaSidebar,
   selectWeek, prevWeek, nextWeek,
@@ -77,7 +77,7 @@ Object.assign(window, {
   // categorias
   openCategoryModal, closeCategoryModal, pickCategorySwatch, saveCategory: () => saveCategory(onCategoryCreated), deleteCategory,
   // anotações
-  openNotesModal, closeNotesModal, saveNotes, formatNotes, highlightNotes, clearNotesFormatting,
+  openNotesModal, closeNotesModal, saveNotes, formatNotes, highlightNotes, clearNotesFormatting, saveNotesSelection, applyCustomHighlight,
   // cronograma
   selectWeek, prevWeek, nextWeek,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,

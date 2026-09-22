@@ -57,8 +57,35 @@ export function formatNotes(command, value){
   document.execCommand(command, false, value ?? null);
 }
 
-export function highlightNotes(){
-  formatNotes('backColor', HIGHLIGHT_COLOR);
+export function highlightNotes(color){
+  formatNotes('backColor', color || HIGHLIGHT_COLOR);
+}
+
+/* ---------------------------------------------------------------------------
+   Cor personalizada (input[type=color] nativo do sistema): abrir o seletor
+   do sistema tira o foco do editor por um instante, o que normalmente perde
+   o texto selecionado. Por isso guardamos a seleção antes de abrir o
+   seletor, e a restauramos assim que uma cor é escolhida.
+--------------------------------------------------------------------------- */
+let savedSelectionRange = null;
+
+export function saveNotesSelection(){
+  const selection = window.getSelection();
+  if(selection && selection.rangeCount > 0){
+    savedSelectionRange = selection.getRangeAt(0).cloneRange();
+  }
+}
+
+export function applyCustomHighlight(color){
+  const editor = el('f-notes');
+  if(!editor) return;
+  editor.focus();
+  if(savedSelectionRange){
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(savedSelectionRange);
+  }
+  document.execCommand('backColor', false, color);
 }
 
 export function clearNotesFormatting(){

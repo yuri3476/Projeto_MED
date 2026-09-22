@@ -215,7 +215,22 @@
         <button type="button" class="notes-tool-btn" style="font-weight:700;" onmousedown="event.preventDefault()" onclick="formatNotes('bold')" title="Negrito">N</button>
         <button type="button" class="notes-tool-btn" style="font-style:italic;" onmousedown="event.preventDefault()" onclick="formatNotes('italic')" title="Itálico">I</button>
         <button type="button" class="notes-tool-btn" style="text-decoration:underline;" onmousedown="event.preventDefault()" onclick="formatNotes('underline')" title="Sublinhado">S</button>
-        <button type="button" class="notes-tool-btn notes-tool-highlight" onmousedown="event.preventDefault()" onclick="highlightNotes()" title="Marcar texto">Marca-texto</button>
+        <button type="button" class="notes-tool-btn" onmousedown="event.preventDefault()" onclick="formatNotes('insertUnorderedList')" title="Lista com marcador">• Lista</button>
+        <span class="notes-tool-divider"></span>
+        <div class="notes-highlight-group" title="Marcar texto">
+          <button type="button" class="notes-highlight-swatch" style="background:#ffe14d" onmousedown="event.preventDefault()" onclick="highlightNotes('#ffe14d')" title="Amarelo"></button>
+          <button type="button" class="notes-highlight-swatch" style="background:#5fd76e" onmousedown="event.preventDefault()" onclick="highlightNotes('#5fd76e')" title="Verde"></button>
+          <button type="button" class="notes-highlight-swatch" style="background:#5bc0f8" onmousedown="event.preventDefault()" onclick="highlightNotes('#5bc0f8')" title="Azul"></button>
+          <button type="button" class="notes-highlight-swatch" style="background:#ff7aa8" onmousedown="event.preventDefault()" onclick="highlightNotes('#ff7aa8')" title="Rosa"></button>
+          <button type="button" class="notes-highlight-swatch" style="background:#b487f0" onmousedown="event.preventDefault()" onclick="highlightNotes('#b487f0')" title="Roxo"></button>
+          <button type="button" class="notes-highlight-swatch" style="background:#ff9d42" onmousedown="event.preventDefault()" onclick="highlightNotes('#ff9d42')" title="Laranja"></button>
+          <button type="button" class="notes-highlight-swatch" style="background:#ff5a5a" onmousedown="event.preventDefault()" onclick="highlightNotes('#ff5a5a')" title="Vermelho"></button>
+          <button type="button" class="notes-highlight-swatch" style="background:#33d6c0" onmousedown="event.preventDefault()" onclick="highlightNotes('#33d6c0')" title="Ciano"></button>
+          <label class="notes-highlight-swatch notes-highlight-custom" title="Escolher outra cor…">
+            +
+            <input type="color" id="f-highlight-custom" value="#ffe14d" onmousedown="saveNotesSelection()" oninput="applyCustomHighlight(this.value)">
+          </label>
+        </div>
         <span class="notes-tool-divider"></span>
         <button type="button" class="notes-tool-btn" onmousedown="event.preventDefault()" onclick="clearNotesFormatting()" title="Limpar formatação">Limpar</button>
       </div>
