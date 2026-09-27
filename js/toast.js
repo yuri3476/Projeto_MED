@@ -1,68 +1,61 @@
 /**
  * toast.js
  * ---------------------------------------------------------------------------
- * Pequenas notificações no canto da tela para erros e confirmações — em vez
- * de falhas silenciosas (que só apareceriam no console), o usuário vê
- * imediatamente quando algo deu errado, como uma falha ao salvar.
+ * Pequenas notificações no canto da tela — erros, confirmações, e avisos com
+ * um botão de ação (usado pelo "Desfazer" ao excluir algo). Usa classes CSS
+ * (definidas em styles.css) em vez de estilos inline, pra poder ajustar o
+ * visual e o comportamento em telas pequenas num só lugar.
  * ---------------------------------------------------------------------------
  */
-
-const STYLES = {
-  error:   { bg: '#f7e6e1', text: '#b1503a', border: '#e3c3ba' },
-  success: { bg: '#e7f0e8', text: '#4f8c5f', border: '#c9dccb' },
-  info:    { bg: '#f1efe8', text: '#2c2a26', border: '#e2e0d3' }
-};
 
 let container = null;
 
 function getContainer(){
   if(container) return container;
   container = document.createElement('div');
-  container.id = 'toast-container';
-  Object.assign(container.style, {
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px',
-    zIndex: '200',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    maxWidth: '320px'
-  });
+  container.className = 'toast-container';
   document.body.appendChild(container);
   return container;
 }
 
-export function showToast(message, type = 'info', durationMs = 4500){
-  const palette = STYLES[type] || STYLES.info;
+/**
+ * showToast(message, type, options)
+ *   type: 'info' | 'success' | 'error'
+ *   options.durationMs: quanto tempo até sumir sozinho (padrão 4500ms;
+ *     6500ms quando há um botão de ação, pra dar tempo de clicar)
+ *   options.actionLabel / options.onAction: texto e função do botão (ex.: "Desfazer")
+ */
+export function showToast(message, type = 'info', options = {}){
+  const { actionLabel, onAction, durationMs } = options;
+  const duration = durationMs || (actionLabel ? 6500 : 4500);
+
   const node = document.createElement('div');
-  node.textContent = message;
+  node.className = `toast toast-${type}`;
   node.setAttribute('role', 'status');
-  Object.assign(node.style, {
-    background: palette.bg,
-    color: palette.text,
-    border: `1px solid ${palette.border}`,
-    padding: '11px 15px',
-    borderRadius: '9px',
-    fontFamily: "'Inter', sans-serif",
-    fontSize: '13px',
-    lineHeight: '1.4',
-    boxShadow: '0 6px 18px rgba(40,35,25,0.14)',
-    opacity: '0',
-    transform: 'translateY(6px)',
-    transition: 'opacity .2s, transform .2s'
-  });
-  getContainer().appendChild(node);
 
-  // força o navegador a aplicar o estado inicial antes de animar a entrada
-  requestAnimationFrame(() => {
-    node.style.opacity = '1';
-    node.style.transform = 'translateY(0)';
-  });
+  const text = document.createElement('span');
+  text.className = 'toast-text';
+  text.textContent = message;
+  node.appendChild(text);
 
-  setTimeout(() => {
-    node.style.opacity = '0';
-    node.style.transform = 'translateY(6px)';
+  let dismissed = false;
+  function dismiss(){
+    if(dismissed) return;
+    dismissed = true;
+    node.classList.remove('toast-in');
     setTimeout(() => node.remove(), 250);
-  }, durationMs);
+  }
+
+  if(actionLabel && onAction){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'toast-action';
+    btn.textContent = actionLabel;
+    btn.onclick = () => { onAction(); dismiss(); };
+    node.appendChild(btn);
+  }
+
+  getContainer().appendChild(node);
+  requestAnimationFrame(() => node.classList.add('toast-in'));
+  setTimeout(dismiss, duration);
 }

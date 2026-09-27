@@ -102,13 +102,22 @@ export async function saveTopic(){
 }
 
 export async function deleteTopic(topicId){
-  const topic = state.topics.find(t => t.id === topicId);
-  if(!topic) return;
+  const index = state.topics.findIndex(t => t.id === topicId);
+  if(index === -1) return;
+  const topic = state.topics[index];
   const confirmed = confirm(`Excluir o tema "${topic.name}"? Todo o histórico de revisões dele será perdido.`);
   if(!confirmed) return;
 
-  state.topics = state.topics.filter(t => t.id !== topicId);
+  state.topics.splice(index, 1);
   await persistAll();
+
+  showToast(`Tema "${topic.name}" excluído.`, 'info', {
+    actionLabel: 'Desfazer',
+    onAction: async () => {
+      state.topics.splice(index, 0, topic);
+      await persistAll();
+    }
+  });
 }
 
 /* ---------------------------------------------------------------------------
@@ -276,7 +285,7 @@ function topicRowHtml(topic){
         <button class="btn-del btn-notes ${hasNotes ? 'has-notes' : ''}" onclick="openNotesModal('${topic.id}')" title="${hasNotes ? 'Ver/editar anotações' : 'Adicionar anotação'}">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5a1 1 0 0 0 1 1h5"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"></path><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="13" y2="17"></line></svg>
         </button>
-        <button class="btn-del" onclick="openTopicModal('${topic.id}')" title="Editar">
+        <button class="btn-del btn-edit" onclick="openTopicModal('${topic.id}')" title="Editar">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
         </button>
         <button class="btn-del" onclick="deleteTopic('${topic.id}')" title="Excluir">

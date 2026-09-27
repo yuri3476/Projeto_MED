@@ -12,6 +12,7 @@ import { escapeHtml, randomId } from './utils.js';
 import { el, setText, setHtml, setDisplay } from './dom.js';
 import { openOverlay, closeOverlay } from './modal.js';
 import { persistAll } from './firebase-sync.js';
+import { showToast } from './toast.js';
 
 export function currentWeek(){
   return state.weeks[state.currentWeekIndex] || null;
@@ -79,13 +80,13 @@ export async function saveWeek(){
 
 export async function deleteWeek(weekId, event){
   if(event) event.stopPropagation();
-  const week = state.weeks.find(w => w.id === weekId);
-  if(!week) return;
+  const index = state.weeks.findIndex(w => w.id === weekId);
+  if(index === -1) return;
+  const week = state.weeks[index];
   const confirmed = confirm(`Excluir "${week.label}" e todas as suas tarefas?`);
   if(!confirmed) return;
 
-  const index = state.weeks.findIndex(w => w.id === weekId);
-  state.weeks = state.weeks.filter(w => w.id !== weekId);
+  state.weeks.splice(index, 1);
   if(state.currentWeekIndex >= index){
     state.currentWeekIndex = Math.max(0, state.currentWeekIndex - 1);
   }
@@ -93,6 +94,17 @@ export async function deleteWeek(weekId, event){
   await persistAll();
   renderCronogramaSidebar();
   renderCronograma();
+
+  showToast(`"${week.label}" excluída.`, 'info', {
+    actionLabel: 'Desfazer',
+    onAction: async () => {
+      state.weeks.splice(index, 0, week);
+      state.currentWeekIndex = index;
+      await persistAll();
+      renderCronogramaSidebar();
+      renderCronograma();
+    }
+  });
 }
 
 /* ---------------------------------------------------------------------------
@@ -164,15 +176,26 @@ export async function toggleTaskDone(taskId){
 export async function deleteTask(taskId){
   const week = currentWeek();
   if(!week) return;
-  const task = week.tasks.find(t => t.id === taskId);
-  if(!task) return;
+  const index = week.tasks.findIndex(t => t.id === taskId);
+  if(index === -1) return;
+  const task = week.tasks[index];
   const confirmed = confirm(`Excluir a tarefa "${task.title}"?`);
   if(!confirmed) return;
 
-  week.tasks = week.tasks.filter(t => t.id !== taskId);
+  week.tasks.splice(index, 1);
   await persistAll();
   renderCronogramaSidebar();
   renderCronograma();
+
+  showToast(`Tarefa "${task.title}" excluída.`, 'info', {
+    actionLabel: 'Desfazer',
+    onAction: async () => {
+      week.tasks.splice(index, 0, task);
+      await persistAll();
+      renderCronogramaSidebar();
+      renderCronograma();
+    }
+  });
 }
 
 export function toggleConcluidasGroup(){
@@ -233,7 +256,7 @@ function taskRowHtml(task){
         </div>
       </div>
       <div class="row-actions">
-        <button class="btn-del" onclick="openTaskModal('${task.id}')" title="Editar">
+        <button class="btn-del btn-edit" onclick="openTaskModal('${task.id}')" title="Editar">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
         </button>
         <button class="btn-del" onclick="deleteTask('${task.id}')" title="Excluir">

@@ -59,6 +59,44 @@ export const SCORE_INTERVALS = [
 // Quantas notas de 100% (não precisam ser seguidas) marcam um tema como Dominado.
 export const MASTERY_PERFECT_SCORES_REQUIRED = 2;
 
+// ---------------------------------------------------------------------------
+// Repetição espaçada dos flashcards: algoritmo FSRS (Free Spaced Repetition
+// Scheduler) — o mesmo modelo de memória (Dificuldade + Estabilidade +
+// Retrievabilidade) que o Anki moderno usa, no lugar do SM-2 clássico.
+//
+// IMPORTANTE sobre os pesos abaixo (FSRS_WEIGHTS): são os parâmetros padrão
+// publicados pelos criadores do FSRS (open-spaced-repetition/fsrs4anki),
+// usados como ponto de partida — mas o próprio projeto FSRS foi desenhado
+// para que cada pessoa treine pesos PRÓPRIOS a partir do seu histórico real
+// de revisões (é isso que dá a ele a vantagem sobre um algoritmo genérico).
+// Se você já usa o Anki com FSRS habilitado, vá em Configurações do baralho
+// → FSRS → Otimizar, copie os 19 números que aparecerem, e cole aqui no
+// lugar destes para ter previsões calibradas com a sua memória de verdade.
+// ---------------------------------------------------------------------------
+export const FSRS_WEIGHTS = [
+  0.4072, 1.1829, 3.1262, 15.4722,   // w0-3: estabilidade inicial (Errei/Difícil/Bom/Fácil)
+  7.2102, 0.5316,                    // w4-5: dificuldade inicial
+  1.0651,                            // w6: quanto a dificuldade muda a cada revisão
+  0.0234,                            // w7: força da regressão à média da dificuldade
+  1.616, 0.1544, 1.0824,             // w8-10: crescimento de estabilidade ao acertar
+  1.9813, 0.0953, 0.2975, 2.2042,    // w11-14: queda de estabilidade ao errar (lapso)
+  0.2407,                            // w15: penalidade do "Difícil"
+  2.9466,                            // w16: bônus do "Fácil"
+  0.5034, 0.6567                     // w17-18: ajuste de curto prazo (não usado neste app)
+];
+
+export const FSRS_DECAY = -0.5;
+export const FSRS_FACTOR = 19 / 81; // deriva de: retrievability(t=S) deve dar exatamente 0.9
+
+// "Retenção desejada": 0.9 = revisa um pouco antes de ter 90% de chance de
+// lembrar. Descer esse número espaça mais as revisões (mais esquecimento
+// tolerado); subir aproxima mais as revisões (menos esquecimento).
+export const FSRS_REQUEST_RETENTION = 0.9;
+
+// Meta diária de revisões mostrada na aba de Análise (ajuste aqui se quiser
+// um número diferente de "cartões por dia" como referência pessoal).
+export const DAILY_REVIEW_GOAL = 50;
+
 // Paths SVG (viewBox 0 0 24 24) reaproveitados nos ícones de navegação.
 export const NAV_ICON_PATHS = {
   todos: '<rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect>',

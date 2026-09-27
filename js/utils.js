@@ -19,6 +19,13 @@ export function addDays(iso, days){
   return d.toISOString().slice(0, 10);
 }
 
+// Quantos dias inteiros se passaram entre duas datas ISO (pode ser negativo).
+export function daysBetween(isoFrom, isoTo){
+  const from = new Date(isoFrom + 'T00:00:00');
+  const to = new Date(isoTo + 'T00:00:00');
+  return Math.round((to - from) / 86400000);
+}
+
 export function fmtDate(iso){
   const d = new Date(iso + 'T00:00:00');
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });

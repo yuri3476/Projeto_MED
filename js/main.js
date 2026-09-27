@@ -15,6 +15,10 @@
  * ---------------------------------------------------------------------------
  */
 import { state } from './state.js';
+import { initTheme, toggleTheme } from './theme.js';
+import { openSettingsModal, closeSettingsModal, saveSettings, resetFsrsWeights, exportBackup } from './settings.js';
+import { renderDashboard, goToRevisoes, goToCronograma, goToFlashcards, goStudyFlashcardsNow, startFirstCategory, startFirstTopic, startFirstFlashcard } from './dashboard.js';
+import { openSearchModal, closeSearchModal, handleSearchInput, openSearchResultTopic, openSearchResultFlashcard, openSearchResultTask } from './search.js';
 import { showToast } from './toast.js';
 import { isOverlayOpen, wireOverlayBackdropDismiss, closeOverlay } from './modal.js';
 import { onSync, getSavedSyncCode, initSync } from './firebase-sync.js';
@@ -38,6 +42,14 @@ import {
   toggleConcluidasGroup
 } from './cronograma.js';
 import { onDragStart, onDragEnd, onDragOver, onDrop } from './dragdrop.js';
+import {
+  renderFlashcardsView,
+  openFlashcardModal, closeFlashcardModal, saveFlashcard, deleteFlashcard,
+  setFlashcardsCatFilter, deleteFlashcardsInCategory,
+  startStudy, exitStudy, flipStudyCard, answerCard,
+  showFlashcardsAnalytics, hideFlashcardsAnalytics,
+  openImportModal, closeImportModal, runImport, downloadImportTemplate
+} from './flashcards.js';
 
 /* ---------------------------------------------------------------------------
    Re-renderização: sempre que os dados mudam (chegou algo novo do Firestore,
@@ -49,6 +61,8 @@ function refreshEverything(){
   renderRevisoesSidebar();
   renderCronogramaSidebar();
   renderCronograma();
+  renderFlashcardsView();
+  renderDashboard();
 }
 onSync(refreshEverything);
 
@@ -70,6 +84,11 @@ async function handleDrop(event, targetId, scope){
    Expor funções para os atributos onclick="..." do HTML.
 --------------------------------------------------------------------------- */
 Object.assign(window, {
+  toggleTheme,
+  openSettingsModal, closeSettingsModal, saveSettings, resetFsrsWeights, exportBackup,
+  goToRevisoes, goToCronograma, goToFlashcards, goStudyFlashcardsNow,
+  startFirstCategory, startFirstTopic, startFirstFlashcard,
+  openSearchModal, closeSearchModal, handleSearchInput, openSearchResultTopic, openSearchResultFlashcard, openSearchResultTask,
   // temas
   openTopicModal, closeTopicModal, saveTopic, deleteTopic,
   openReviewModal, closeReviewModal, submitReview,
@@ -88,7 +107,14 @@ Object.assign(window, {
   // sincronização
   createNewSyncCode, useEnteredSyncCode, openSyncSettings, closeSyncModal, copySyncCode,
   // arrastar-e-soltar
-  onDragStart, onDragEnd, onDragOver, handleDrop
+  onDragStart, onDragEnd, onDragOver, handleDrop,
+  // questões
+  // flashcards
+  openFlashcardModal, closeFlashcardModal, saveFlashcard, deleteFlashcard,
+  setFlashcardsCatFilter, deleteFlashcardsInCategory,
+  startStudy, exitStudy, flipStudyCard, answerCard,
+  showFlashcardsAnalytics, hideFlashcardsAnalytics,
+  openImportModal, closeImportModal, runImport, downloadImportTemplate
 });
 
 // Quando uma categoria é criada a partir do formulário de tema (botão "+" ao
@@ -115,7 +141,11 @@ const OVERLAYS_WITH_BACKDROP_DISMISS = [
   ['cat-overlay', closeCategoryModal],
   ['notes-overlay', closeNotesModal],
   ['task-overlay', closeTaskModal],
-  ['week-overlay', closeWeekModal]
+  ['week-overlay', closeWeekModal],
+  ['flashcard-overlay', closeFlashcardModal],
+  ['import-overlay', closeImportModal],
+  ['settings-overlay', closeSettingsModal],
+  ['search-overlay', closeSearchModal]
 ];
 OVERLAYS_WITH_BACKDROP_DISMISS.forEach(([id, close]) => wireOverlayBackdropDismiss(id, close));
 
@@ -128,10 +158,39 @@ document.addEventListener('click', (event) => {
 });
 
 document.getElementById('search')?.addEventListener('input', renderTopics);
+document.getElementById('flashcard-search')?.addEventListener('input', renderFlashcardsView);
 document.getElementById('f-score')?.addEventListener('input', e => { e.target.style.borderColor = 'var(--border)'; });
 document.getElementById('f-cat-name')?.addEventListener('input', e => { e.target.style.borderColor = 'var(--border)'; });
+document.getElementById('f-flashcard-front')?.addEventListener('input', e => { e.target.style.borderColor = 'var(--border)'; });
+document.getElementById('f-flashcard-back')?.addEventListener('input', e => { e.target.style.borderColor = 'var(--border)'; });
+document.getElementById('f-flashcard-stability')?.addEventListener('input', e => { e.target.style.borderColor = 'var(--border)'; });
+document.getElementById('f-flashcard-difficulty')?.addEventListener('input', e => { e.target.style.borderColor = 'var(--border)'; });
 
 document.addEventListener('keydown', (event) => {
+  // Ctrl+K (ou Cmd+K no Mac) abre a busca global de qualquer lugar do app
+  if((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k'){
+    event.preventDefault();
+    openSearchModal();
+    return;
+  }
+
+  // atalhos do modo de estudo (não disparam se algum campo de texto estiver
+  // em foco, pra não atrapalhar quem está digitando em outro lugar)
+  const typing = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
+  if(state.studying && !typing){
+    if(!state.studyFlipped && (event.key === ' ' || event.code === 'Space')){
+      event.preventDefault();
+      flipStudyCard();
+      return;
+    }
+    if(state.studyFlipped && ['1', '2', '3', '4'].includes(event.key)){
+      event.preventDefault();
+      const ratingByKey = { '1': 'again', '2': 'hard', '3': 'good', '4': 'easy' };
+      answerCard(ratingByKey[event.key]);
+      return;
+    }
+  }
+
   if(event.key === 'Enter'){
     if(isOverlayOpen('overlay')) saveTopic();
     else if(isOverlayOpen('review-overlay')) submitReview();
@@ -146,6 +205,10 @@ document.addEventListener('keydown', (event) => {
     closeNotesModal();
     closeTaskModal();
     closeWeekModal();
+    closeFlashcardModal();
+    closeImportModal();
+    closeSettingsModal();
+    closeSearchModal();
   }
 });
 
@@ -167,6 +230,8 @@ window.addEventListener('unhandledrejection', (event) => {
    Boot: conecta automaticamente se já existe um código salvo neste
    navegador; caso contrário, pede para criar ou informar um código.
 --------------------------------------------------------------------------- */
+initTheme();
+
 const savedCode = getSavedSyncCode();
 if(savedCode){
   closeOverlay('sync-overlay');
@@ -176,5 +241,18 @@ if(savedCode){
   document.getElementById('sync-overlay')?.classList.add('open');
 }
 
-// tela inicial: mostra "Revisões" por padrão
-setView('revisoes');
+// tela inicial: mostra "Painel" por padrão
+setView('painel');
+
+/* ---------------------------------------------------------------------------
+   PWA: registra o Service Worker (deixa o app instalável e mais rápido em
+   visitas seguintes). Se o navegador não suportar, ou o registro falhar,
+   o app continua funcionando normalmente — é só uma melhoria opcional.
+--------------------------------------------------------------------------- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch((err) => {
+      console.warn('[revisões] não foi possível registrar o service worker:', err);
+    });
+  });
+}

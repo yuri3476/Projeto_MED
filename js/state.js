@@ -7,13 +7,14 @@
  * imediatamente pelos outros, sem precisar de funções "setState" repetidas.
  * ---------------------------------------------------------------------------
  */
-import { CAT_PALETTE } from './config.js';
+import { CAT_PALETTE, FSRS_WEIGHTS, FSRS_REQUEST_RETENTION, DAILY_REVIEW_GOAL } from './config.js';
 
 export const state = {
   // dados sincronizados com o Firestore
   topics: [],
   categories: [],
   weeks: [],
+  flashcards: [],
 
   // filtros / navegação da tela de Revisões
   currentView: 'revisoes',
@@ -31,6 +32,27 @@ export const state = {
   editingTaskId: null,
   reviewTargetId: null,
   notesTargetId: null,
+  editingFlashcardId: null,
+  editingCategoryId: null,
+  flashcardsCatFilter: null,
+  flashcardsSubView: 'bank', // 'bank' | 'study' | 'analytics'
+  studying: false,
+  studyFlipped: false,
+  studyPool: [],
+  studyIndex: 0,
+  studyScore: { again: 0, hard: 0, good: 0, easy: 0 },
+
+  // estatísticas dos flashcards (sincronizadas, para a aba de Análise)
+  flashcardStats: { again: 0, hard: 0, good: 0, easy: 0 },
+  dailyStats: { date: null, reviewed: 0, studySeconds: 0 },
+  streak: { count: 0, lastDate: null },
+
+  // ajustáveis pela tela de Configurações (em vez de fixos no código)
+  settings: {
+    dailyGoal: DAILY_REVIEW_GOAL,
+    fsrsRetention: FSRS_REQUEST_RETENTION,
+    fsrsWeights: [...FSRS_WEIGHTS]
+  },
 
   // arrastar-e-soltar (compartilhado entre temas e tarefas)
   draggedId: null,

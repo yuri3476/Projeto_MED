@@ -81,6 +81,17 @@ export function initSync(code){
       state.topics = Array.isArray(data.topics) ? data.topics : [];
       state.categories = Array.isArray(data.categories) ? data.categories : [];
       state.weeks = Array.isArray(data.weeks) ? data.weeks : [];
+      state.flashcards = Array.isArray(data.flashcards) ? data.flashcards : [];
+      state.flashcardStats = data.flashcardStats || { again: 0, hard: 0, good: 0, easy: 0 };
+      state.dailyStats = data.dailyStats || { date: null, reviewed: 0, studySeconds: 0 };
+      state.streak = data.streak || { count: 0, lastDate: null };
+      if(data.settings){
+        state.settings = {
+          dailyGoal: data.settings.dailyGoal ?? state.settings.dailyGoal,
+          fsrsRetention: data.settings.fsrsRetention ?? state.settings.fsrsRetention,
+          fsrsWeights: Array.isArray(data.settings.fsrsWeights) ? data.settings.fsrsWeights : state.settings.fsrsWeights
+        };
+      }
 
       if(state.currentWeekIndex >= state.weeks.length){
         state.currentWeekIndex = Math.max(0, state.weeks.length - 1);
@@ -114,7 +125,12 @@ export async function persistAll(){
     await setDoc(state.currentDocRef, {
       topics: state.topics,
       categories: state.categories,
-      weeks: state.weeks
+      weeks: state.weeks,
+      flashcards: state.flashcards,
+      flashcardStats: state.flashcardStats,
+      dailyStats: state.dailyStats,
+      streak: state.streak,
+      settings: state.settings
     });
     return true;
   }catch(error){

@@ -6,6 +6,14 @@
 <title>Revisões</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f8c5f'/%3E%3Cpath d='M16 10.2c-2-2.2-5.6-3.2-10.2-3.2v15.6c4.6 0 8.2.9 10.2 3.2 2-2.3 5.6-3.2 10.2-3.2V7c-4.6 0-8.2 1-10.2 3.2z' fill='%23ffffff'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/styles.css">
+
+<!-- PWA: manifesto + ícones, o que faz o navegador oferecer "Instalar app" -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4f8c5f">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Revisões">
 </head>
 <body>
 <div class="app">
@@ -20,13 +28,37 @@
         <div class="brand-name">Revisões</div>
         <div class="brand-tag">seu painel de estudos</div>
       </div>
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema claro/escuro">
+        <svg class="icon theme-icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"></line><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"></line><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"></line></svg>
+        <svg class="icon theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+      <button class="theme-toggle" onclick="openSettingsModal()" title="Configurações">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
     </div>
 
-    <div class="view-switch" id="view-switch">
-      <button class="view-tab active" data-view="revisoes" onclick="setView('revisoes')">Revisões</button>
-      <button class="view-tab" data-view="cronograma" onclick="setView('cronograma')">Cronograma</button>
-    </div>
+    <nav class="nav-list view-switch" id="view-switch">
+      <button class="nav-item view-tab active" data-view="painel" onclick="setView('painel')">
+        <span class="nav-label">Painel</span>
+      </button>
+      <button class="nav-item view-tab" data-view="revisoes" onclick="setView('revisoes')">
+        <span class="nav-label">Revisões</span>
+      </button>
+      <button class="nav-item view-tab" data-view="cronograma" onclick="setView('cronograma')">
+        <span class="nav-label">Cronograma</span>
+      </button>
+      <button class="nav-item view-tab" data-view="flashcards" onclick="setView('flashcards')">
+        <span class="nav-label">Flashcards</span>
+      </button>
+    </nav>
 
+    <button class="global-search-trigger" onclick="openSearchModal()">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <span>Buscar tudo...</span>
+      <span class="global-search-kbd">Ctrl K</span>
+    </button>
+
+    <div class="sidebar-filters">
     <div id="revisoes-sidebar">
     <div class="side-section">
       <div class="side-label-row"><span class="side-label">Painel</span></div>
@@ -64,6 +96,19 @@
       </div>
     </div>
 
+    <div id="flashcards-sidebar" style="display:none;">
+      <div class="side-section">
+        <div class="side-label-row">
+          <span class="side-label">Categorias</span>
+          <button class="side-add-btn" onclick="openCategoryModal()" title="Criar categoria">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </button>
+        </div>
+        <nav class="nav-list" id="flashcard-cat-nav"></nav>
+      </div>
+    </div>
+    </div>
+
     <div class="side-section sync-box">
       <div class="side-label">Sincronização</div>
       <div class="sync-code-row">
@@ -76,7 +121,17 @@
   </aside>
 
   <main class="main">
-  <div id="revisoes-main">
+  <div id="painel-main" style="display:none;">
+    <div class="main-header">
+      <div>
+        <h1>Painel</h1>
+        <p class="subtitle" id="dashboard-summary"></p>
+      </div>
+    </div>
+    <div class="dashboard-grid" id="dashboard-cards"></div>
+  </div>
+
+  <div id="revisoes-main" style="display:none;">
     <div class="main-header">
       <div>
         <h1 id="main-title">Todos os temas</h1>
@@ -131,6 +186,66 @@
 
     <div class="list" id="task-list"><div class="loading">Carregando...</div></div>
   </div>
+
+  <div id="flashcards-main" style="display:none;">
+    <div id="flashcards-bank-view">
+      <div class="main-header">
+        <div>
+          <h1>Flashcards</h1>
+          <p class="subtitle" id="flashcards-subtitle"></p>
+        </div>
+        <div class="header-actions">
+          <div class="search-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input id="flashcard-search" placeholder="Buscar na frente ou verso...">
+          </div>
+          <button class="btn-secondary" onclick="showFlashcardsAnalytics()">📊 Análise</button>
+          <button class="btn-secondary" onclick="openImportModal()">Importar</button>
+          <button class="btn-add" onclick="openFlashcardModal()">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Novo flashcard
+          </button>
+        </div>
+      </div>
+
+      <div id="flashcards-stats" style="display:flex;gap:8px;margin-bottom:12px;"></div>
+      <button class="btn-primary" style="width:100%;padding:13px;font-size:14.5px;margin-bottom:10px;" onclick="startStudy()">▶ Estudar estes flashcards</button>
+      <div id="flashcards-bulk-delete" style="text-align:right;margin-bottom:14px;"></div>
+
+      <div class="list" id="flashcards-bank-list"><div class="loading">Carregando...</div></div>
+    </div>
+
+    <div id="flashcards-study-view" style="display:none;">
+      <div class="main-header">
+        <div>
+          <h1>Estudando</h1>
+          <p class="subtitle" id="study-progress"></p>
+        </div>
+        <div class="header-actions">
+          <span id="study-score" style="display:flex;gap:6px;flex-wrap:wrap;"></span>
+          <button class="btn-secondary" onclick="exitStudy()">Sair do estudo</button>
+        </div>
+      </div>
+      <div class="quiz-card">
+        <div id="study-body"></div>
+      </div>
+      <div class="quiz-actions-row" id="study-actions"></div>
+    </div>
+
+    <div id="flashcards-analytics-view" style="display:none;">
+      <div class="main-header">
+        <div>
+          <h1>Análise</h1>
+          <p class="subtitle">Seu desempenho com os flashcards</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="hideFlashcardsAnalytics()">Voltar ao banco</button>
+        </div>
+      </div>
+      <div id="flashcards-analytics-body"></div>
+    </div>
+  </div>
+
   </main>
 </div>
 
@@ -285,6 +400,109 @@
       <button class="btn-secondary" onclick="closeWeekModal()">Cancelar</button>
       <button class="btn-primary" id="save-week-btn" onclick="saveWeek()">Criar semana</button>
     </div>
+  </div>
+</div>
+
+<div class="overlay" id="flashcard-overlay">
+  <div class="modal" style="max-width:480px;">
+    <h2 id="flashcard-modal-title">Novo flashcard</h2>
+    <div class="field">
+      <label>Frente</label>
+      <textarea id="f-flashcard-front" rows="3" placeholder="Ex: Qual a tríade de Virchow?" style="width:100%;background:var(--field-bg);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;resize:vertical;"></textarea>
+    </div>
+    <div class="field">
+      <label>Verso</label>
+      <textarea id="f-flashcard-back" rows="3" placeholder="Ex: Estase venosa, lesão endotelial e hipercoagulabilidade" style="width:100%;background:var(--field-bg);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;resize:vertical;"></textarea>
+    </div>
+    <div class="field">
+      <label>Categoria</label>
+      <select id="f-flashcard-cat"></select>
+    </div>
+    <div class="field" id="fsrs-manual-fields" style="display:none;">
+      <label>Repetição espaçada <span style="font-weight:400;color:var(--text-muted);">(sobrescreve o que o FSRS calculou)</span></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div>
+          <label style="font-size:11px;display:block;margin-bottom:4px;">Próxima revisão</label>
+          <input type="date" id="f-flashcard-due">
+        </div>
+        <div>
+          <label style="font-size:11px;display:block;margin-bottom:4px;">Estabilidade (dias)</label>
+          <input type="number" id="f-flashcard-stability" min="0.1" step="0.1">
+        </div>
+        <div>
+          <label style="font-size:11px;display:block;margin-bottom:4px;">Dificuldade (1–10)</label>
+          <input type="number" id="f-flashcard-difficulty" min="1" max="10" step="0.1">
+        </div>
+      </div>
+      <p style="font-size:11.5px;color:var(--text-muted);margin:8px 0 0;">Útil pra adiantar, atrasar ou corrigir um cartão manualmente. Deixe como está se não quiser mexer.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeFlashcardModal()">Cancelar</button>
+      <button class="btn-primary" id="save-flashcard-btn" onclick="saveFlashcard()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="import-overlay">
+  <div class="modal" style="max-width:560px;">
+    <h2>Importar flashcards</h2>
+    <p class="desc">Envie um arquivo <strong>.json</strong>, <strong>.csv</strong> ou <strong>.txt</strong> (inclusive exportado direto do Anki) com vários flashcards de uma vez, ou cole o conteúdo abaixo. Categorias que ainda não existirem são criadas automaticamente.</p>
+    <div class="field">
+      <label>Arquivo (.json ou .csv)</label>
+      <input type="file" id="f-import-file" accept=".json,.csv,.txt">
+    </div>
+    <div class="or-divider">ou cole aqui</div>
+    <div class="field">
+      <textarea id="f-import-text" rows="6" placeholder="Cole o conteúdo JSON ou CSV aqui..." style="width:100%;background:var(--field-bg);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-family:'SFMono-Regular',Consolas,monospace;font-size:12.5px;line-height:1.5;resize:vertical;"></textarea>
+    </div>
+    <div style="display:flex;gap:16px;margin:2px 0 4px;">
+      <button type="button" class="side-link" onclick="downloadImportTemplate('json')">Baixar modelo JSON</button>
+      <button type="button" class="side-link" onclick="downloadImportTemplate('csv')">Baixar modelo CSV</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeImportModal()">Cancelar</button>
+      <button class="btn-primary" onclick="runImport()">Importar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="settings-overlay">
+  <div class="modal" style="max-width:520px;">
+    <h2>Configurações</h2>
+    <div class="field">
+      <label>Meta diária de flashcards</label>
+      <input type="number" id="f-settings-goal" min="1" step="1">
+    </div>
+    <div class="field">
+      <label>Retenção desejada do FSRS (%)</label>
+      <input type="number" id="f-settings-retention" min="70" max="99" step="1">
+      <p style="font-size:11.5px;color:var(--text-muted);margin:6px 2px 0;">Mais baixo = revisões mais espaçadas (mais esquecimento tolerado). Mais alto = revisões mais próximas. O Anki usa 90% por padrão.</p>
+    </div>
+    <div class="field">
+      <label>Pesos do FSRS <span style="font-weight:400;color:var(--text-muted);">(19 números separados por vírgula)</span></label>
+      <textarea id="f-settings-weights" rows="3" style="width:100%;background:var(--field-bg);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-family:'SFMono-Regular',Consolas,monospace;font-size:12px;line-height:1.5;resize:vertical;"></textarea>
+      <button type="button" class="side-link" onclick="resetFsrsWeights()" style="margin-top:6px;">Restaurar pesos padrão</button>
+      <p style="font-size:11.5px;color:var(--text-muted);margin:6px 2px 0;">Se você já usa o Anki com FSRS, pode colar aqui os pesos otimizados do seu próprio histórico (Configurações do baralho → FSRS → Otimizar).</p>
+    </div>
+    <div class="field" style="border-top:1px solid var(--border);padding-top:16px;">
+      <label>Seus dados</label>
+      <button type="button" class="btn-secondary" style="width:100%;" onclick="exportBackup()">⬇ Exportar backup (.json)</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeSettingsModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveSettings()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="search-overlay">
+  <div class="modal search-modal">
+    <div class="search-input-row">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="global-search-input" placeholder="Buscar temas, flashcards, tarefas..." oninput="handleSearchInput()" autocomplete="off">
+      <button class="btn-secondary" onclick="closeSearchModal()">Esc</button>
+    </div>
+    <div class="search-results" id="global-search-results"></div>
   </div>
 </div>
 
