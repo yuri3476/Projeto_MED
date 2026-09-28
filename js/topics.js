@@ -168,6 +168,65 @@ export async function submitReview(){
 }
 
 /* ---------------------------------------------------------------------------
+   Corrigir uma nota já registrada (caso tenha digitado errado na hora).
+   Se for a revisão mais recente, o prazo da próxima revisão é recalculado
+   com base na nota corrigida; se for uma revisão mais antiga, só corrige o
+   registro em si (não reabre o histórico inteiro em cascata).
+--------------------------------------------------------------------------- */
+let historyEditTarget = null; // { topicId, index }
+
+export function openHistoryEditModal(topicId, index){
+  const topic = state.topics.find(t => t.id === topicId);
+  if(!topic || !topic.history || !topic.history[index]) return;
+
+  historyEditTarget = { topicId, index };
+  const entry = topic.history[index];
+
+  setText('history-edit-topic-name', topic.name);
+  setText('history-edit-date', fmtDate(entry.date));
+  const input = el('f-history-score');
+  if(input) input.value = entry.score;
+
+  openOverlay('history-edit-overlay');
+  setTimeout(() => input && input.focus(), 50);
+}
+
+export function closeHistoryEditModal(){
+  closeOverlay('history-edit-overlay');
+  historyEditTarget = null;
+}
+
+export async function saveHistoryEdit(){
+  if(!historyEditTarget) return;
+  const topic = state.topics.find(t => t.id === historyEditTarget.topicId);
+  if(!topic || !topic.history || !topic.history[historyEditTarget.index]) return;
+
+  const input = el('f-history-score');
+  const rawValue = input ? input.value : '';
+  const score = Number(rawValue);
+  const isValid = rawValue !== '' && !Number.isNaN(score) && score >= 0 && score <= 100;
+  if(!isValid){
+    if(input) input.style.borderColor = 'var(--brick)';
+    showToast('Digite uma nota entre 0 e 100.', 'error');
+    return;
+  }
+
+  const entry = topic.history[historyEditTarget.index];
+  entry.score = score;
+
+  // se essa é a revisão mais recente, o prazo da próxima revisão também é
+  // recalculado a partir da data em que ela aconteceu (não de hoje).
+  const isLastEntry = historyEditTarget.index === topic.history.length - 1;
+  if(isLastEntry){
+    topic.nextDate = addDays(entry.date, intervalForScore(score));
+  }
+
+  closeHistoryEditModal();
+  await persistAll();
+  showToast('Nota corrigida.', 'success');
+}
+
+/* ---------------------------------------------------------------------------
    Filtros da tela de Revisões
 --------------------------------------------------------------------------- */
 
@@ -249,9 +308,9 @@ function topicRowHtml(topic){
   const history = topic.history || [];
   const mastered = isMastered(topic);
 
-  const dots = history.map(h => {
+  const dots = history.map((h, index) => {
     const dotClass = mastered ? 'dominado-dot' : (h.score < 50 ? 'low-score' : '');
-    return `<span class="dot ${dotClass}" title="${h.score}%">✓</span>`;
+    return `<button class="dot ${dotClass}" title="${h.score}% em ${fmtDate(h.date)} — clique para corrigir" onclick="openHistoryEditModal('${topic.id}', ${index})">✓</button>`;
   }).join('');
 
   const action = status === 'dominado'

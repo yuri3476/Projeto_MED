@@ -28,6 +28,7 @@ import {
   renderTopics, renderRevisoesSidebar,
   openTopicModal, closeTopicModal, saveTopic, deleteTopic,
   openReviewModal, closeReviewModal, submitReview,
+  openHistoryEditModal, closeHistoryEditModal, saveHistoryEdit,
   setStatusFilter, setCategoryFilter, setPriorityFilter
 } from './topics.js';
 import {
@@ -99,6 +100,7 @@ Object.assign(window, {
   // temas
   openTopicModal, closeTopicModal, saveTopic, deleteTopic,
   openReviewModal, closeReviewModal, submitReview,
+  openHistoryEditModal, closeHistoryEditModal, saveHistoryEdit,
   setStatusFilter, setCategoryFilter, setPriorityFilter,
   // categorias
   openCategoryModal, closeCategoryModal, pickCategorySwatch, saveCategory: () => saveCategory(onCategoryCreated), deleteCategory,
@@ -145,6 +147,7 @@ function onCategoryCreated(newCategoryName){
 const OVERLAYS_WITH_BACKDROP_DISMISS = [
   ['overlay', closeTopicModal],
   ['review-overlay', closeReviewModal],
+  ['history-edit-overlay', closeHistoryEditModal],
   ['cat-overlay', closeCategoryModal],
   ['notes-overlay', closeNotesModal],
   ['task-overlay', closeTaskModal],
@@ -167,6 +170,7 @@ document.addEventListener('click', (event) => {
 document.getElementById('search')?.addEventListener('input', renderTopics);
 document.getElementById('flashcard-search')?.addEventListener('input', renderFlashcardsView);
 document.getElementById('f-score')?.addEventListener('input', e => { e.target.style.borderColor = 'var(--border)'; });
+document.getElementById('f-history-score')?.addEventListener('input', e => { e.target.style.borderColor = 'var(--border)'; });
 document.getElementById('f-cat-name')?.addEventListener('input', e => { e.target.style.borderColor = 'var(--border)'; });
 document.getElementById('f-flashcard-front')?.addEventListener('input', e => { e.target.style.borderColor = 'var(--border)'; });
 document.getElementById('f-flashcard-back')?.addEventListener('input', e => { e.target.style.borderColor = 'var(--border)'; });
@@ -201,6 +205,7 @@ document.addEventListener('keydown', (event) => {
   if(event.key === 'Enter'){
     if(isOverlayOpen('overlay')) saveTopic();
     else if(isOverlayOpen('review-overlay')) submitReview();
+    else if(isOverlayOpen('history-edit-overlay')) saveHistoryEdit();
     else if(isOverlayOpen('cat-overlay')) saveCategory(onCategoryCreated);
     else if(isOverlayOpen('task-overlay')) saveTask();
     else if(isOverlayOpen('week-overlay')) saveWeek();
@@ -208,6 +213,7 @@ document.addEventListener('keydown', (event) => {
   if(event.key === 'Escape'){
     closeTopicModal();
     closeReviewModal();
+    closeHistoryEditModal();
     closeCategoryModal();
     closeNotesModal();
     closeTaskModal();
