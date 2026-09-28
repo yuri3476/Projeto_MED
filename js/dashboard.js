@@ -22,6 +22,12 @@ function topicsSummary(){
   return { atrasados, hoje, total: state.topics.length };
 }
 
+function topicsStatusBreakdown(){
+  const counts = { atrasado: 0, hoje: 0, emdia: 0, dominado: 0 };
+  state.topics.forEach(t => { counts[statusOf(t)]++; });
+  return counts;
+}
+
 function cronogramaSummary(){
   let pendentes = 0;
   let total = 0;
@@ -39,6 +45,13 @@ function flashcardsSummary(){
   const novos = state.flashcards.filter(c => c.status !== 'review').length;
   const paraHoje = state.flashcards.filter(c => c.status === 'review' && c.due <= today).length;
   return { novos, paraHoje, total: state.flashcards.length };
+}
+
+function formatDuration(totalSeconds){
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const pad = n => String(n).padStart(2, '0');
+  return h > 0 ? `${h}h ${pad(m)}min` : `${m}min`;
 }
 
 function goToRevisoes(){ setView('revisoes'); }
@@ -96,10 +109,82 @@ function dashboardCard({ title, big, bigLabel, lines, actionLabel, onAction, acc
   `;
 }
 
+function miniDonut(segments){
+  const total = segments.reduce((sum, seg) => sum + seg.count, 0);
+  let cursor = 0;
+  const stops = segments.map(seg => {
+    const pct = total ? (seg.count / total) * 100 : 0;
+    const stop = `${seg.color} ${cursor}% ${cursor + pct}%`;
+    cursor += pct;
+    return stop;
+  });
+  const bg = total ? `conic-gradient(${stops.join(', ')})` : 'var(--field-bg)';
+  return `
+    <div class="mini-donut" style="background:${bg}">
+      <div class="mini-donut-hole"><strong>${total}</strong></div>
+    </div>
+  `;
+}
+
+function miniLegend(segments){
+  return segments.map(seg => `
+    <div class="mini-legend-row">
+      <span class="mini-legend-dot" style="background:${seg.color}"></span>
+      <span class="mini-legend-label">${seg.label}</span>
+      <span class="mini-legend-count">${seg.count}</span>
+    </div>
+  `).join('');
+}
+
+function chartCard(title, segments, footer){
+  return `
+    <div class="dash-chart-card">
+      <div class="dash-chart-title">${title}</div>
+      <div class="dash-chart-body">
+        ${miniDonut(segments)}
+        <div class="mini-legend">${miniLegend(segments)}</div>
+      </div>
+      ${footer ? `<div class="dash-chart-footer">${footer}</div>` : ''}
+    </div>
+  `;
+}
+
+function renderDashboardCharts(){
+  const topicsBreak = topicsStatusBreakdown();
+  const topicsSegments = [
+    { label: 'Atrasado', color: 'var(--brick)', count: topicsBreak.atrasado },
+    { label: 'Hoje', color: 'var(--gold)', count: topicsBreak.hoje },
+    { label: 'Em dia', color: 'var(--sage)', count: topicsBreak.emdia },
+    { label: 'Dominado', color: 'var(--teal)', count: topicsBreak.dominado }
+  ];
+
+  const cron = cronogramaSummary();
+  const cronSegments = [
+    { label: 'Concluídas', color: 'var(--sage)', count: cron.total - cron.pendentes },
+    { label: 'Pendentes', color: 'var(--gold)', count: cron.pendentes }
+  ];
+
+  const fc = state.flashcardStats;
+  const fcSegments = [
+    { label: 'Fácil', color: 'var(--teal)', count: fc.easy || 0 },
+    { label: 'Bom', color: 'var(--sage)', count: fc.good || 0 },
+    { label: 'Difícil', color: 'var(--gold)', count: fc.hard || 0 },
+    { label: 'Errei', color: 'var(--brick)', count: fc.again || 0 }
+  ];
+  const streakFooter = `🔥 ${state.streak.count || 0} dia${(state.streak.count || 0) === 1 ? '' : 's'} seguidos · ${formatDuration(state.dailyStats.studySeconds || 0)} hoje`;
+
+  setHtml('dashboard-charts', [
+    chartCard('Status dos temas', topicsSegments),
+    chartCard('Progresso do cronograma', cronSegments),
+    chartCard('Flashcards por marcação', fcSegments, streakFooter)
+  ].join(''));
+}
+
 export function renderDashboard(){
   if(isFreshAccount()){
     setHtml('dashboard-summary', 'Vamos começar.');
     setHtml('dashboard-cards', welcomeCardHtml());
+    setHtml('dashboard-charts', '');
     return;
   }
 
@@ -154,6 +239,8 @@ export function renderDashboard(){
       accent: 'var(--teal)'
     })
   ].join(''));
+
+  renderDashboardCharts();
 }
 
 export { goToRevisoes, goToCronograma, goToFlashcards, goStudyFlashcardsNow, startFirstCategory, startFirstTopic, startFirstFlashcard };

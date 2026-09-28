@@ -184,7 +184,7 @@ export function renderCategoryNavGeneric({ navId, items, activeFilter, onFilterF
   setHtml(navId, state.categories.map(category => `
     <div class="nav-item-wrap">
       <button class="nav-item ${activeFilter === category.name ? 'active' : ''}" onclick="${onFilterFn}('${escapeAttr(category.name)}')">
-        <span class="cat-swatch" style="background:${category.color}"></span>
+        <span class="nav-icon-slot"><span class="cat-swatch" style="background:${category.color}"></span></span>
         <span class="nav-label">${escapeHtml(category.name)}</span>
         <span class="nav-count">${counts[category.name] || 0}</span>
       </button>

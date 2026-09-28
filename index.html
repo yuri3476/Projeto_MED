@@ -8,9 +8,9 @@
 <link rel="stylesheet" href="css/styles.css">
 
 <!-- PWA: manifesto + ícones, o que faz o navegador oferecer "Instalar app" -->
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#4f8c5f">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Revisões">
@@ -129,6 +129,7 @@
       </div>
     </div>
     <div class="dashboard-grid" id="dashboard-cards"></div>
+    <div class="dashboard-charts" id="dashboard-charts"></div>
   </div>
 
   <div id="revisoes-main" style="display:none;">
@@ -448,6 +449,11 @@
     <h2>Importar flashcards</h2>
     <p class="desc">Envie um arquivo <strong>.json</strong>, <strong>.csv</strong> ou <strong>.txt</strong> (inclusive exportado direto do Anki) com vários flashcards de uma vez, ou cole o conteúdo abaixo. Categorias que ainda não existirem são criadas automaticamente.</p>
     <div class="field">
+      <label>Categoria</label>
+      <select id="f-import-category-override"></select>
+      <p style="font-size:11.5px;color:var(--text-muted);margin:6px 2px 0;">Por padrão, cada cartão usa a categoria que vier dentro do próprio arquivo. Escolha uma categoria aqui pra colocar <strong>todos</strong> os cartões importados nela, ignorando o que o arquivo diz.</p>
+    </div>
+    <div class="field">
       <label>Arquivo (.json ou .csv)</label>
       <input type="file" id="f-import-file" accept=".json,.csv,.txt">
     </div>
@@ -487,6 +493,11 @@
     <div class="field" style="border-top:1px solid var(--border);padding-top:16px;">
       <label>Seus dados</label>
       <button type="button" class="btn-secondary" style="width:100%;" onclick="exportBackup()">⬇ Exportar backup (.json)</button>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <input type="file" id="f-settings-restore-file" accept=".json" style="flex:1;font-size:12px;">
+        <button type="button" class="btn-secondary" onclick="importBackup()">Restaurar backup</button>
+      </div>
+      <p style="font-size:11.5px;color:var(--text-muted);margin:6px 2px 0;">Restaurar substitui todos os seus dados atuais pelos do arquivo escolhido. Use com cuidado.</p>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeSettingsModal()">Cancelar</button>

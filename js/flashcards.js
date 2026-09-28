@@ -9,7 +9,7 @@
  */
 import { state } from './state.js';
 import { CAT_PALETTE, FSRS_DECAY, FSRS_FACTOR } from './config.js';
-import { escapeHtml, randomId, todayISO, addDays, daysBetween, fmtDate } from './utils.js';
+import { escapeHtml, escapeAttr, randomId, todayISO, addDays, daysBetween, fmtDate } from './utils.js';
 import { el, setText, setHtml, setDisplay } from './dom.js';
 import { openOverlay, closeOverlay } from './modal.js';
 import { persistAll } from './firebase-sync.js';
@@ -622,9 +622,14 @@ export async function answerCard(rating){
     state.studyIndex += 1;
   }
 
-  await persistAll();
+  // vira a tela pro próximo cartão (virado pra frente) ANTES de salvar —
+  // assim, mesmo que algo dispare um redesenho enquanto o salvamento ainda
+  // está em andamento, ele mostra a frente do cartão certo, nunca o verso
+  // do errado.
   state.studyFlipped = false;
   renderStudyCard();
+
+  await persistAll();
 }
 
 function renderStudyCard(){
@@ -717,6 +722,19 @@ export function openImportModal(){
   const textInput = el('f-import-text');
   if(fileInput) fileInput.value = '';
   if(textInput) textInput.value = '';
+
+  const overrideSelect = el('f-import-category-override');
+  if(overrideSelect){
+    overrideSelect.innerHTML = '<option value="">Detectar automaticamente (usa a categoria do arquivo)</option>' +
+      state.categories.map(c => `<option value="${escapeAttr(c.name)}">Colocar tudo em: ${escapeHtml(c.name)}</option>`).join('');
+    // se você já estava filtrando por uma categoria, é bem provável que
+    // seja essa que você quer usar pros itens importados — pré-seleciona,
+    // mas ainda dá pra trocar pra "detectar automaticamente" se preferir.
+    if(state.flashcardsCatFilter){
+      overrideSelect.value = state.flashcardsCatFilter;
+    }
+  }
+
   openOverlay('import-overlay');
 }
 export function closeImportModal(){
@@ -852,20 +870,22 @@ function buildFlashcardFromParts(front, back, categoryName){
   };
 }
 
-function normalizeJsonItem(item){
+function normalizeJsonItem(item, overrideCategory){
   return buildFlashcardFromParts(
     item.frente ?? item.front,
     item.verso ?? item.back,
-    item.categoria ?? item.cat
+    overrideCategory || (item.categoria ?? item.cat)
   );
 }
-function normalizeCsvItem(row){
-  return buildFlashcardFromParts(row.frente, row.verso, row.categoria);
+function normalizeCsvItem(row, overrideCategory){
+  return buildFlashcardFromParts(row.frente, row.verso, overrideCategory || row.categoria);
 }
 
 export async function runImport(){
   const fileInput = el('f-import-file');
   const textInput = el('f-import-text');
+  const overrideSelect = el('f-import-category-override');
+  const overrideCategory = overrideSelect ? overrideSelect.value.trim() : '';
   const file = fileInput && fileInput.files && fileInput.files[0];
 
   let rawText = '';
@@ -898,7 +918,7 @@ export async function runImport(){
       const parsed = JSON.parse(rawText);
       const items = Array.isArray(parsed) ? parsed : [parsed];
       items.forEach(item => {
-        const card = normalizeJsonItem(item);
+        const card = normalizeJsonItem(item, overrideCategory);
         if(card) imported.push(card); else skipped++;
       });
     }catch(e){
@@ -920,7 +940,7 @@ export async function runImport(){
       return;
     }
     objects.forEach(row => {
-      const card = normalizeCsvItem(row);
+      const card = normalizeCsvItem(row, overrideCategory);
       if(card) imported.push(card); else skipped++;
     });
   }

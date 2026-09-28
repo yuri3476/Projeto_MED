@@ -112,3 +112,60 @@ export function exportBackup(){
 
   showToast('Backup baixado com sucesso.', 'success');
 }
+
+/* ---------------------------------------------------------------------------
+   Importar (restaurar) um backup gerado pelo "Exportar backup" acima — ou
+   qualquer JSON com essa mesma estrutura. Substitui os dados atuais pelos
+   do arquivo, então pede confirmação antes de aplicar.
+--------------------------------------------------------------------------- */
+function readFileAsText(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(file);
+  });
+}
+
+export async function importBackup(){
+  const fileInput = el('f-settings-restore-file');
+  const file = fileInput && fileInput.files && fileInput.files[0];
+  if(!file){
+    showToast('Escolha um arquivo de backup (.json) primeiro.', 'error');
+    return;
+  }
+
+  let data;
+  try{
+    const text = await readFileAsText(file);
+    data = JSON.parse(text);
+  }catch(e){
+    showToast('Não consegui ler esse arquivo. Confira se é um .json válido.', 'error');
+    return;
+  }
+
+  const knownKeys = ['topics', 'categories', 'weeks', 'flashcards', 'flashcardStats', 'dailyStats', 'streak', 'settings'];
+  const hasAnyKnownKey = knownKeys.some(key => key in data);
+  if(!hasAnyKnownKey){
+    showToast('Esse arquivo não parece ser um backup deste app.', 'error');
+    return;
+  }
+
+  const confirmed = confirm(
+    'Restaurar esse backup vai SUBSTITUIR todos os seus dados atuais (temas, categorias, cronograma, flashcards e configurações) pelos dados do arquivo. Essa ação não pode ser desfeita. Continuar?'
+  );
+  if(!confirmed) return;
+
+  if(Array.isArray(data.topics)) state.topics = data.topics;
+  if(Array.isArray(data.categories)) state.categories = data.categories;
+  if(Array.isArray(data.weeks)) state.weeks = data.weeks;
+  if(Array.isArray(data.flashcards)) state.flashcards = data.flashcards;
+  if(data.flashcardStats) state.flashcardStats = data.flashcardStats;
+  if(data.dailyStats) state.dailyStats = data.dailyStats;
+  if(data.streak) state.streak = data.streak;
+  if(data.settings) state.settings = data.settings;
+
+  await persistAll();
+  closeSettingsModal();
+  showToast('Backup restaurado com sucesso.', 'success');
+}

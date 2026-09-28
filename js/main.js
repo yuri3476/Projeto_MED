@@ -16,7 +16,7 @@
  */
 import { state } from './state.js';
 import { initTheme, toggleTheme } from './theme.js';
-import { openSettingsModal, closeSettingsModal, saveSettings, resetFsrsWeights, exportBackup } from './settings.js';
+import { openSettingsModal, closeSettingsModal, saveSettings, resetFsrsWeights, exportBackup, importBackup } from './settings.js';
 import { renderDashboard, goToRevisoes, goToCronograma, goToFlashcards, goStudyFlashcardsNow, startFirstCategory, startFirstTopic, startFirstFlashcard } from './dashboard.js';
 import { openSearchModal, closeSearchModal, handleSearchInput, openSearchResultTopic, openSearchResultFlashcard, openSearchResultTask } from './search.js';
 import { showToast } from './toast.js';
@@ -61,7 +61,14 @@ function refreshEverything(){
   renderRevisoesSidebar();
   renderCronogramaSidebar();
   renderCronograma();
-  renderFlashcardsView();
+  // não redesenha a tela de estudo enquanto uma sessão está em andamento —
+  // isso evita uma corrida: salvar no Firebase dispara essa função de volta,
+  // e se ela redesenhasse o cartão no meio da troca pro próximo, mostrava o
+  // verso do cartão errado por uma fração de segundo. A tela de estudo já se
+  // atualiza sozinha a cada resposta (via answerCard/flipStudyCard).
+  if(!state.studying){
+    renderFlashcardsView();
+  }
   renderDashboard();
 }
 onSync(refreshEverything);
@@ -85,7 +92,7 @@ async function handleDrop(event, targetId, scope){
 --------------------------------------------------------------------------- */
 Object.assign(window, {
   toggleTheme,
-  openSettingsModal, closeSettingsModal, saveSettings, resetFsrsWeights, exportBackup,
+  openSettingsModal, closeSettingsModal, saveSettings, resetFsrsWeights, exportBackup, importBackup,
   goToRevisoes, goToCronograma, goToFlashcards, goStudyFlashcardsNow,
   startFirstCategory, startFirstTopic, startFirstFlashcard,
   openSearchModal, closeSearchModal, handleSearchInput, openSearchResultTopic, openSearchResultFlashcard, openSearchResultTask,
@@ -250,9 +257,7 @@ setView('painel');
    o app continua funcionando normalmente — é só uma melhoria opcional.
 --------------------------------------------------------------------------- */
 if('serviceWorker' in navigator){
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch((err) => {
-      console.warn('[revisões] não foi possível registrar o service worker:', err);
-    });
+  navigator.serviceWorker.register('/sw.js').catch((err) => {
+    console.warn('[revisões] não foi possível registrar o service worker:', err);
   });
 }

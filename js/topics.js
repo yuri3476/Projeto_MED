@@ -199,7 +199,7 @@ function renderStatusNav(){
 
   setHtml('status-nav', ['todos', 'hoje', 'atrasado', 'emdia', 'dominado'].map(key => `
     <button class="nav-item ${state.currentFilter === key ? 'active' : ''}" onclick="setStatusFilter('${key}')">
-      ${icon(key)}<span class="nav-label">${labels[key]}</span><span class="nav-count">${counts[key]}</span>
+      <span class="nav-icon-slot">${icon(key)}</span><span class="nav-label">${labels[key]}</span><span class="nav-count">${counts[key]}</span>
     </button>
   `).join(''));
 }
@@ -210,7 +210,7 @@ function renderPriorityNav(){
 
   setHtml('prio-nav', PRIO_ORDER.map(p => `
     <button class="nav-item ${state.currentPrioFilter === p ? 'active' : ''}" onclick="setPriorityFilter('${p}')">
-      <span class="prio-swatch" style="background:var(--prio-${p})"></span>
+      <span class="nav-icon-slot"><span class="prio-swatch" style="background:var(--prio-${p})"></span></span>
       <span class="nav-label">${PRIO_LABEL[p].replace(' incidência', '')}</span>
       <span class="nav-count">${counts[p]}</span>
     </button>
