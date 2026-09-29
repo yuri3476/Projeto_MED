@@ -226,6 +226,34 @@ export async function saveHistoryEdit(){
   showToast('Nota corrigida.', 'success');
 }
 
+export async function deleteHistoryEntry(){
+  if(!historyEditTarget) return;
+  const topic = state.topics.find(t => t.id === historyEditTarget.topicId);
+  if(!topic || !topic.history || !topic.history[historyEditTarget.index]) return;
+
+  const confirmed = confirm('Excluir esse registro de revisão? Essa ação não pode ser desfeita.');
+  if(!confirmed) return;
+
+  const wasLastEntry = historyEditTarget.index === topic.history.length - 1;
+  topic.history.splice(historyEditTarget.index, 1);
+
+  // se era a revisão mais recente, o prazo passa a ser recalculado a partir
+  // da revisão que agora ficou por último (ou volta a "sem revisão ainda"
+  // se o histórico ficou vazio).
+  if(wasLastEntry){
+    if(topic.history.length > 0){
+      const newLast = topic.history[topic.history.length - 1];
+      topic.nextDate = addDays(newLast.date, intervalForScore(newLast.score));
+    } else {
+      topic.nextDate = todayISO();
+    }
+  }
+
+  closeHistoryEditModal();
+  await persistAll();
+  showToast('Registro de revisão excluído.', 'success');
+}
+
 /* ---------------------------------------------------------------------------
    Filtros da tela de Revisões
 --------------------------------------------------------------------------- */

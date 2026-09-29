@@ -28,7 +28,7 @@ import {
   renderTopics, renderRevisoesSidebar,
   openTopicModal, closeTopicModal, saveTopic, deleteTopic,
   openReviewModal, closeReviewModal, submitReview,
-  openHistoryEditModal, closeHistoryEditModal, saveHistoryEdit,
+  openHistoryEditModal, closeHistoryEditModal, saveHistoryEdit, deleteHistoryEntry,
   setStatusFilter, setCategoryFilter, setPriorityFilter
 } from './topics.js';
 import {
@@ -100,7 +100,7 @@ Object.assign(window, {
   // temas
   openTopicModal, closeTopicModal, saveTopic, deleteTopic,
   openReviewModal, closeReviewModal, submitReview,
-  openHistoryEditModal, closeHistoryEditModal, saveHistoryEdit,
+  openHistoryEditModal, closeHistoryEditModal, saveHistoryEdit, deleteHistoryEntry,
   setStatusFilter, setCategoryFilter, setPriorityFilter,
   // categorias
   openCategoryModal, closeCategoryModal, pickCategorySwatch, saveCategory: () => saveCategory(onCategoryCreated), deleteCategory,

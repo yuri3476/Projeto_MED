@@ -311,9 +311,12 @@
       <label>% de acertos correto</label>
       <input id="f-history-score" type="number" min="0" max="100" placeholder="Ex: 85" autocomplete="off">
     </div>
-    <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeHistoryEditModal()">Cancelar</button>
-      <button class="btn-primary" onclick="saveHistoryEdit()">Salvar</button>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button class="btn-secondary" style="color:var(--brick);border-color:var(--brick-soft);" onclick="deleteHistoryEntry()">Excluir revisão</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-secondary" onclick="closeHistoryEditModal()">Cancelar</button>
+        <button class="btn-primary" onclick="saveHistoryEdit()">Salvar</button>
+      </div>
     </div>
   </div>
 </div>
