@@ -568,7 +568,10 @@ export function startStudy(){
     showToast('Nenhum flashcard novo ou pendente para estudar com esse filtro. 🎉', 'info');
     return;
   }
-  state.studyPool = shuffle(pool);
+  // guarda só os IDs (não os objetos): a cada salvamento o Firestore devolve
+  // cópias novas dos cartões, e um objeto guardado aqui ficaria "solto" —
+  // as respostas dadas a ele seriam alteradas na cópia velha e nunca salvas.
+  state.studyPool = shuffle(pool).map(c => c.id);
   state.studyIndex = 0;
   state.studyScore = { again: 0, hard: 0, good: 0, easy: 0 };
   state.studyFlipped = false;
@@ -582,8 +585,17 @@ export function exitStudy(){
   renderFlashcardsView();
 }
 
+// Resolve o cartão atual sempre a partir da lista VIVA (state.flashcards), pelo id.
+// Se o cartão foi apagado enquanto a sessão corria (ex.: em outro aparelho),
+// pula ele em vez de travar.
 function currentStudyCard(){
-  return state.studyPool[state.studyIndex] || null;
+  while(state.studyIndex < state.studyPool.length){
+    const id = state.studyPool[state.studyIndex];
+    const card = state.flashcards.find(c => c.id === id);
+    if(card) return card;
+    state.studyPool.splice(state.studyIndex, 1);
+  }
+  return null;
 }
 
 export function flipStudyCard(){

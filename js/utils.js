@@ -7,28 +7,40 @@
  */
 import { NAV_ICON_PATHS, SCORE_INTERVALS } from './config.js';
 
+// Datas são sempre tratadas como DIA DE CALENDÁRIO LOCAL ("2026-10-05").
+// Antes isso passava por toISOString(), que converte pra UTC e, em fusos à
+// frente de Londres (Portugal, Espanha, Japão...), fazia "hoje" virar "ontem".
+function pad2(n){ return String(n).padStart(2, '0'); }
+
+function toLocalISO(date){
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
+function parseISO(iso){
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
 export function todayISO(){
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().slice(0, 10);
+  return toLocalISO(new Date());
 }
 
 export function addDays(iso, days){
-  const d = new Date(iso + 'T00:00:00');
+  const d = parseISO(iso);
   d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+  return toLocalISO(d);
 }
 
 // Quantos dias inteiros se passaram entre duas datas ISO (pode ser negativo).
 export function daysBetween(isoFrom, isoTo){
-  const from = new Date(isoFrom + 'T00:00:00');
-  const to = new Date(isoTo + 'T00:00:00');
-  return Math.round((to - from) / 86400000);
+  const a = parseISO(isoFrom);
+  const b = parseISO(isoTo);
+  return Math.round((Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) -
+                     Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())) / 86400000);
 }
 
 export function fmtDate(iso){
-  const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  return parseISO(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 }
 
 // Dada uma nota de 0 a 100, devolve em quantos dias a próxima revisão deve ocorrer.

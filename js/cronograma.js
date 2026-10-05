@@ -179,6 +179,7 @@ export async function deleteTask(taskId){
   const index = week.tasks.findIndex(t => t.id === taskId);
   if(index === -1) return;
   const task = week.tasks[index];
+  const weekId = week.id;
   const confirmed = confirm(`Excluir a tarefa "${task.title}"?`);
   if(!confirmed) return;
 
@@ -190,7 +191,11 @@ export async function deleteTask(taskId){
   showToast(`Tarefa "${task.title}" excluída.`, 'info', {
     actionLabel: 'Desfazer',
     onAction: async () => {
-      week.tasks.splice(index, 0, task);
+      // busca a semana de novo pelo id: depois de salvar, a lista de semanas
+      // é substituída por cópias novas, e a referência `week` de cima ficou solta.
+      const liveWeek = state.weeks.find(w => w.id === weekId);
+      if(!liveWeek) return;
+      liveWeek.tasks.splice(Math.min(index, liveWeek.tasks.length), 0, task);
       await persistAll();
       renderCronogramaSidebar();
       renderCronograma();
