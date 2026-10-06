@@ -11,7 +11,8 @@ import { setHtml } from './dom.js';
 import { statusOf } from './topics.js';
 import { todayISO } from './utils.js';
 import { setView } from './view.js';
-import { startStudy } from './flashcards.js';
+import { startStudyAll } from './flashcards.js';
+import { todayTasksCount } from './cronograma.js';
 import { openCategoryModal } from './categories.js';
 import { openTopicModal } from './topics.js';
 import { openFlashcardModal } from './flashcards.js';
@@ -37,7 +38,7 @@ function cronogramaSummary(){
       if(!task.done) pendentes += 1;
     });
   });
-  return { pendentes, total, semanas: state.weeks.length };
+  return { pendentes, total, semanas: state.weeks.length, paraHoje: todayTasksCount().pendentes };
 }
 
 function flashcardsSummary(){
@@ -55,11 +56,12 @@ function formatDuration(totalSeconds){
 }
 
 function goToRevisoes(){ setView('revisoes'); }
-function goToCronograma(){ setView('cronograma'); }
+function goToCronograma(){ state.cronogramaHoje = false; setView('cronograma'); }
+function goToCronogramaHoje(){ state.cronogramaHoje = true; setView('cronograma'); }
 function goToFlashcards(){ setView('flashcards'); }
 function goStudyFlashcardsNow(){
   setView('flashcards');
-  setTimeout(() => startStudy(), 60);
+  setTimeout(() => startStudyAll(), 60);
 }
 
 function isFreshAccount(){
@@ -218,11 +220,12 @@ export function renderDashboard(){
       big: cron.pendentes,
       bigLabel: 'tarefas a fazer',
       lines: [
+        ...(cron.paraHoje > 0 ? [`<strong>${cron.paraHoje} para hoje</strong>`] : []),
         `${cron.semanas} semana${cron.semanas === 1 ? '' : 's'} criada${cron.semanas === 1 ? '' : 's'}`,
         `${cron.total} tarefas no total`
       ],
-      actionLabel: 'Ver cronograma',
-      onAction: 'goToCronograma()',
+      actionLabel: cron.paraHoje > 0 ? 'Ver tarefas de hoje' : 'Ver cronograma',
+      onAction: cron.paraHoje > 0 ? 'goToCronogramaHoje()' : 'goToCronograma()',
       accent: 'var(--gold)'
     }),
     dashboardCard({
@@ -243,4 +246,4 @@ export function renderDashboard(){
   renderDashboardCharts();
 }
 
-export { goToRevisoes, goToCronograma, goToFlashcards, goStudyFlashcardsNow, startFirstCategory, startFirstTopic, startFirstFlashcard };
+export { goToRevisoes, goToCronograma, goToCronogramaHoje, goToFlashcards, goStudyFlashcardsNow, startFirstCategory, startFirstTopic, startFirstFlashcard };

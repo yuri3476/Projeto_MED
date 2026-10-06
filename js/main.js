@@ -17,7 +17,7 @@
 import { state } from './state.js';
 import { initTheme, toggleTheme } from './theme.js';
 import { openSettingsModal, closeSettingsModal, saveSettings, resetFsrsWeights, exportBackup, importBackup } from './settings.js';
-import { renderDashboard, goToRevisoes, goToCronograma, goToFlashcards, goStudyFlashcardsNow, startFirstCategory, startFirstTopic, startFirstFlashcard } from './dashboard.js';
+import { renderDashboard, goToRevisoes, goToCronograma, goToCronogramaHoje, goToFlashcards, goStudyFlashcardsNow, startFirstCategory, startFirstTopic, startFirstFlashcard } from './dashboard.js';
 import { openSearchModal, closeSearchModal, handleSearchInput, openSearchResultTopic, openSearchResultFlashcard, openSearchResultTask } from './search.js';
 import { showToast } from './toast.js';
 import { isOverlayOpen, wireOverlayBackdropDismiss, closeOverlay } from './modal.js';
@@ -37,16 +37,16 @@ import {
 import { openNotesModal, closeNotesModal, saveNotes, formatNotes, highlightNotes, clearNotesFormatting, saveNotesSelection, applyCustomHighlight, toggleHighlightPicker, closeHighlightPicker } from './notes.js';
 import {
   renderCronograma, renderCronogramaSidebar,
-  selectWeek, prevWeek, nextWeek,
+  selectWeek, showCronogramaHoje, prevWeek, nextWeek,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
-  openTaskModal, closeTaskModal, saveTask, toggleTaskDone, deleteTask,
+  openTaskModal, closeTaskModal, saveTask, toggleTaskDone, toggleTaskToday, setTaskDayToday, deleteTask,
   toggleConcluidasGroup
 } from './cronograma.js';
 import { onDragStart, onDragEnd, onDragOver, onDrop } from './dragdrop.js';
 import {
   renderFlashcardsView,
   openFlashcardModal, closeFlashcardModal, saveFlashcard, deleteFlashcard,
-  setFlashcardsCatFilter, deleteFlashcardsInCategory,
+  setFlashcardsCatFilter, setFlashcardsStatusFilter, deleteFlashcardsInCategory,
   startStudy, exitStudy, flipStudyCard, answerCard,
   showFlashcardsAnalytics, hideFlashcardsAnalytics,
   openImportModal, closeImportModal, runImport, downloadImportTemplate
@@ -94,7 +94,7 @@ async function handleDrop(event, targetId, scope){
 Object.assign(window, {
   toggleTheme,
   openSettingsModal, closeSettingsModal, saveSettings, resetFsrsWeights, exportBackup, importBackup,
-  goToRevisoes, goToCronograma, goToFlashcards, goStudyFlashcardsNow,
+  goToRevisoes, goToCronograma, goToCronogramaHoje, goToFlashcards, goStudyFlashcardsNow,
   startFirstCategory, startFirstTopic, startFirstFlashcard,
   openSearchModal, closeSearchModal, handleSearchInput, openSearchResultTopic, openSearchResultFlashcard, openSearchResultTask,
   // temas
@@ -107,9 +107,9 @@ Object.assign(window, {
   // anotações
   openNotesModal, closeNotesModal, saveNotes, formatNotes, highlightNotes, clearNotesFormatting, saveNotesSelection, applyCustomHighlight, toggleHighlightPicker, closeHighlightPicker,
   // cronograma
-  selectWeek, prevWeek, nextWeek,
+  selectWeek, showCronogramaHoje, prevWeek, nextWeek,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
-  openTaskModal, closeTaskModal, saveTask, toggleTaskDone, deleteTask,
+  openTaskModal, closeTaskModal, saveTask, toggleTaskDone, toggleTaskToday, setTaskDayToday, deleteTask,
   toggleConcluidasGroup,
   // navegação entre telas
   setView,
@@ -120,7 +120,7 @@ Object.assign(window, {
   // questões
   // flashcards
   openFlashcardModal, closeFlashcardModal, saveFlashcard, deleteFlashcard,
-  setFlashcardsCatFilter, deleteFlashcardsInCategory,
+  setFlashcardsCatFilter, setFlashcardsStatusFilter, deleteFlashcardsInCategory,
   startStudy, exitStudy, flipStudyCard, answerCard,
   showFlashcardsAnalytics, hideFlashcardsAnalytics,
   openImportModal, closeImportModal, runImport, downloadImportTemplate

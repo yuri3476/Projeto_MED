@@ -25,6 +25,7 @@ export const state = {
   // navegação da tela de Cronograma
   currentWeekIndex: 0,
   concluidasCollapsed: false,
+  cronogramaHoje: false, // true = mostrando a visão "Hoje" (tarefas do dia, de todas as semanas)
 
   // controle de qual item está sendo editado em cada modal
   editingTopicId: null,
@@ -35,6 +36,7 @@ export const state = {
   editingFlashcardId: null,
   editingCategoryId: null,
   flashcardsCatFilter: null,
+  flashcardsStatusFilter: 'todos', // 'todos' | 'novo' | 'hoje' | 'emdia'
   flashcardsSubView: 'bank', // 'bank' | 'study' | 'analytics'
   studying: false,
   studyFlipped: false,

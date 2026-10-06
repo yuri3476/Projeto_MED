@@ -19,7 +19,7 @@
  * versão abaixo — isso cria um cache novo e descarta o antigo.
  * ---------------------------------------------------------------------------
  */
-const CACHE_VERSION = 'revisoes-v6';
+const CACHE_VERSION = 'revisoes-v8';
 
 const APP_SHELL = [
   '/',

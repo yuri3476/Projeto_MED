@@ -111,6 +111,7 @@ export async function saveFlashcard(){
       }
     }
   } else {
+    ensureNewCardsVisible();
     state.flashcards.push({
       id: randomId('f'),
       front, back, cat,
@@ -362,7 +363,9 @@ export function renderFlashcardsSidebar(){
   });
 }
 
-function filteredFlashcards(){
+// Categoria + busca (ainda SEM o filtro de situação). É a base usada pra
+// contar quantos cartões cabem em cada filtro (Novos / Para hoje / Em dia).
+function searchedFlashcards(){
   const searchInput = el('flashcard-search');
   const search = searchInput ? searchInput.value.trim().toLowerCase() : '';
   return state.flashcards.filter(c => {
@@ -370,6 +373,37 @@ function filteredFlashcards(){
     if(search && !c.front.toLowerCase().includes(search) && !c.back.toLowerCase().includes(search)) return false;
     return true;
   });
+}
+
+// Situação do cartão, na mesma lógica do rótulo de cada linha:
+//   novo  = nunca revisado
+//   hoje  = já revisado e vence hoje (ou já venceu)
+//   emdia = já revisado, próxima revisão marcada pra frente
+function matchesStatus(card, filter){
+  if(filter === 'novo') return card.status !== 'review';
+  const today = todayISO();
+  if(filter === 'hoje') return card.status === 'review' && card.due <= today;
+  if(filter === 'emdia') return card.status === 'review' && card.due > today;
+  return true; // 'todos'
+}
+
+// O que aparece na lista E o que o botão "Estudar estes flashcards" estuda.
+function filteredFlashcards(){
+  const filter = state.flashcardsStatusFilter;
+  return searchedFlashcards().filter(c => matchesStatus(c, filter));
+}
+
+export function setFlashcardsStatusFilter(filter){
+  state.flashcardsStatusFilter = filter;
+  renderFlashcardsView();
+}
+
+// Cartão recém-criado/importado é "novo": se o filtro atual o esconderia,
+// volta pra "Todos" pra você ver o que acabou de adicionar.
+function ensureNewCardsVisible(){
+  if(state.flashcardsStatusFilter === 'hoje' || state.flashcardsStatusFilter === 'emdia'){
+    state.flashcardsStatusFilter = 'todos';
+  }
 }
 
 function flashcardRowHtml(card){
@@ -397,17 +431,44 @@ function flashcardRowHtml(card){
   `;
 }
 
-function renderFlashcardsBank(){
-  const filtered = filteredFlashcards();
-  setText('flashcards-subtitle', filtered.length === 1 ? '1 flashcard' : `${filtered.length} flashcards`);
+const STATUS_CHIPS = [
+  { key: 'todos', label: 'Todos',     hint: 'Todos os cartões' },
+  { key: 'novo',  label: 'Novos',     hint: 'Ainda não foram revisados nenhuma vez' },
+  { key: 'hoje',  label: 'Para hoje', hint: 'Vencem hoje ou já venceram (inclui atrasados)' },
+  { key: 'emdia', label: 'Em dia',    hint: 'Já revisados, com a próxima revisão marcada pra frente' }
+];
 
-  const today = todayISO();
-  const newCount = filtered.filter(c => c.status !== 'review').length;
-  const dueCount = filtered.filter(c => c.status === 'review' && c.due <= today).length;
-  setHtml('flashcards-stats', `
-    <span class="nav-count-badge novo">${newCount} novo${newCount === 1 ? '' : 's'}</span>
-    <span class="nav-count-badge hoje">${dueCount} para hoje</span>
-  `);
+const EMPTY_BY_STATUS = {
+  novo:  'Você já revisou todos os cartões pelo menos uma vez.',
+  hoje:  'Nenhum cartão vence hoje. Bom trabalho!',
+  emdia: 'Ainda não há cartões revisados. Estude alguns e eles aparecem aqui, com a data da próxima revisão.'
+};
+
+function bankSubtitle(count, filter){
+  const noun = count === 1 ? 'flashcard' : 'flashcards';
+  if(filter === 'novo') return count === 1 ? '1 flashcard novo' : `${count} flashcards novos`;
+  if(filter === 'hoje') return `${count} ${noun} para hoje`;
+  if(filter === 'emdia') return `${count} ${noun} em dia`;
+  return `${count} ${noun}`;
+}
+
+function renderFlashcardsBank(){
+  const base = searchedFlashcards();
+  const filter = state.flashcardsStatusFilter;
+  const filtered = base.filter(c => matchesStatus(c, filter));
+  setText('flashcards-subtitle', bankSubtitle(filtered.length, filter));
+
+  // chips de filtro (a contagem de cada um ignora o chip escolhido, só olha categoria + busca)
+  setHtml('flashcards-stats', STATUS_CHIPS.map(chip => {
+    const count = base.filter(c => matchesStatus(c, chip.key)).length;
+    const active = filter === chip.key;
+    return `
+      <button type="button" class="status-chip ${chip.key} ${active ? 'active' : ''}" aria-pressed="${active}"
+              title="${chip.hint}" onclick="setFlashcardsStatusFilter('${chip.key}')">
+        ${chip.label}<span class="status-chip-count">${count}</span>
+      </button>
+    `;
+  }).join(''));
 
   if(state.flashcardsCatFilter){
     const catCount = state.flashcards.filter(c => c.cat === state.flashcardsCatFilter).length;
@@ -421,13 +482,23 @@ function renderFlashcardsBank(){
   }
 
   if(filtered.length === 0){
-    const message = state.flashcards.length === 0
-      ? 'Adicione seu primeiro flashcard para começar a estudar por aqui mesmo.'
-      : 'Nenhum flashcard corresponde a esse filtro.';
+    let message;
+    if(state.flashcards.length === 0){
+      message = 'Adicione seu primeiro flashcard para começar a estudar por aqui mesmo.';
+    } else if(filter !== 'todos' && base.length > 0){
+      message = EMPTY_BY_STATUS[filter];
+    } else {
+      message = 'Nenhum flashcard corresponde a esse filtro.';
+    }
     setHtml('flashcards-bank-list', `<div class="empty"><strong>Nada por aqui</strong>${message}</div>`);
     return;
   }
-  setHtml('flashcards-bank-list', filtered.map(flashcardRowHtml).join(''));
+
+  // nos filtros de revisão, o que vence primeiro aparece primeiro
+  const rows = (filter === 'hoje' || filter === 'emdia')
+    ? [...filtered].sort((a, b) => a.due.localeCompare(b.due))
+    : filtered;
+  setHtml('flashcards-bank-list', rows.map(flashcardRowHtml).join(''));
 }
 
 export function showFlashcardsAnalytics(){
@@ -578,6 +649,16 @@ export function startStudy(){
   state.studying = true;
   studySessionLastTick = Date.now();
   renderFlashcardsView();
+}
+
+// Usado pelo botão "Estudar agora" do Painel: ele promete "tudo que está pendente",
+// então ignora qualquer filtro (categoria, situação, busca) que tenha ficado na tela.
+export function startStudyAll(){
+  state.flashcardsStatusFilter = 'todos';
+  state.flashcardsCatFilter = null;
+  const searchInput = el('flashcard-search');
+  if(searchInput) searchInput.value = '';
+  startStudy();
 }
 
 export function exitStudy(){
@@ -963,6 +1044,7 @@ export async function runImport(){
   }
 
   state.flashcards.push(...imported);
+  ensureNewCardsVisible();
   await persistAll();
   closeImportModal();
   renderFlashcardsView();

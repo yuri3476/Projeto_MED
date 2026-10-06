@@ -27,6 +27,7 @@
   --brick-soft: #f7e6e1;
   --teal: #3f7a93;
   --teal-soft: #e4eef2;
+  --blue-soft: #e9ecf7;
   --prio-altissima: #b04863;
   --prio-alta: #b1762f;
   --prio-media: #5b71a0;
@@ -67,6 +68,7 @@
   --brick-soft: #3a2620;
   --teal: #6bb0cd;
   --teal-soft: #1f2e33;
+  --blue-soft: #262c3f;
   --prio-altissima: #dd8298;
   --prio-alta: #dba868;
   --prio-media: #93a8d6;
@@ -246,6 +248,9 @@ h1{font-family:'Source Serif 4',serif;font-weight:600;font-size:29px;margin:0 0 
 .row-main{flex:1;min-width:0;}
 .row-top{display:flex;align-items:center;gap:9px;margin-bottom:5px;flex-wrap:wrap;}
 .row-name{font-size:15.5px;font-weight:600;color:var(--text-strong);}
+.day-chip{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:var(--field-bg);color:var(--text-muted);white-space:nowrap;}
+.day-chip.hoje{background:var(--gold-soft);color:var(--gold);}
+.day-chip.atrasada{background:var(--brick-soft);color:var(--brick);}
 .tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);background:var(--field-bg);padding:3px 10px 3px 8px;border-radius:20px;}
 .tag-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 .prio{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;background:var(--field-bg);padding:3px 9px 3px 7px;border-radius:20px;}
@@ -283,6 +288,9 @@ h1{font-family:'Source Serif 4',serif;font-weight:600;font-size:29px;margin:0 0 
 .btn-notes svg{width:19px;height:19px;}
 .btn-notes.has-notes{opacity:1;color:var(--gold);}
 .btn-notes.has-notes:hover{color:var(--sage);}
+.btn-del.btn-today:hover{color:var(--gold);}
+.btn-today.has-today{opacity:1;color:var(--gold);}
+.btn-today.has-today svg circle{fill:currentColor;}
 .empty{padding:60px 20px;text-align:center;color:var(--text-muted);font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;}
 .empty::before{
   content:'';display:block;width:44px;height:44px;margin:0 auto 14px;border-radius:12px;
@@ -430,12 +438,27 @@ h1{font-family:'Source Serif 4',serif;font-weight:600;font-size:29px;margin:0 0 
 .quiz-actions-row{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:22px;}
 .quiz-actions-row .btn-primary, .quiz-actions-row .btn-secondary{padding:11px 26px;}
 
-.nav-count-badge{
-  font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:20px;
-  background:var(--field-bg);color:var(--text-muted);
+.status-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.status-chip{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;
+  padding:6px 13px;border-radius:20px;cursor:pointer;
+  background:var(--field-bg);color:var(--text-muted);border:1.5px solid transparent;
+  transition:border-color .15s var(--ease), background .15s var(--ease), color .15s var(--ease);
 }
-.nav-count-badge.novo{background:#eceafb;color:var(--prio-media);}
-.nav-count-badge.hoje{background:var(--gold-soft);color:var(--gold);}
+.status-chip:hover{border-color:var(--border-strong);color:var(--text);}
+.status-chip-count{font-size:11.5px;font-weight:700;opacity:.8;}
+.status-chip.novo{background:var(--blue-soft);color:var(--prio-media);}
+.status-chip.hoje{background:var(--gold-soft);color:var(--gold);}
+.status-chip.emdia{background:var(--sage-soft);color:var(--sage);}
+.status-chip.novo:hover, .status-chip.hoje:hover, .status-chip.emdia:hover{border-color:currentColor;color:inherit;}
+/* escolhido: fica "cheio" na cor do próprio filtro */
+.status-chip.active{font-weight:700;}
+.status-chip.active .status-chip-count{opacity:1;}
+.status-chip.todos.active{background:var(--text);color:var(--bg);}
+.status-chip.novo.active{background:var(--prio-media);color:var(--bg);}
+.status-chip.hoje.active{background:var(--gold);color:var(--bg);}
+.status-chip.emdia.active{background:var(--sage);color:var(--bg);}
 
 .score-chip{font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:20px;white-space:nowrap;}
 .score-chip.again{background:var(--brick-soft);color:var(--brick);}

@@ -162,14 +162,14 @@
     <div class="main-header">
       <div>
         <div style="display:flex;align-items:center;gap:10px;">
-          <button class="btn-icon-sm" onclick="prevWeek()" title="Semana anterior">
+          <button class="btn-icon-sm" id="week-prev-btn" onclick="prevWeek()" title="Semana anterior">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
           </button>
           <h1 id="week-title" style="margin:0;">Semana 1</h1>
-          <button class="btn-icon-sm" onclick="nextWeek()" title="Próxima semana">
+          <button class="btn-icon-sm" id="week-next-btn" onclick="nextWeek()" title="Próxima semana">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
-          <button class="btn-icon-sm" onclick="openWeekModal(true)" title="Renomear semana">
+          <button class="btn-icon-sm" id="week-rename-btn" onclick="openWeekModal(true)" title="Renomear semana">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
           </button>
         </div>
@@ -209,7 +209,7 @@
         </div>
       </div>
 
-      <div id="flashcards-stats" style="display:flex;gap:8px;margin-bottom:12px;"></div>
+      <div id="flashcards-stats" class="status-chips"></div>
       <button class="btn-primary" style="width:100%;padding:13px;font-size:14.5px;margin-bottom:10px;" onclick="startStudy()">▶ Estudar estes flashcards</button>
       <div id="flashcards-bulk-delete" style="text-align:right;margin-bottom:14px;"></div>
 
@@ -400,6 +400,18 @@
         <option value="media">Média incidência</option>
         <option value="baixa">Baixa incidência</option>
       </select>
+    </div>
+    <div class="field" id="task-week-field" style="display:none;">
+      <label>Semana</label>
+      <select id="f-task-week"></select>
+    </div>
+    <div class="field">
+      <label>Fazer em <span style="font-weight:400;color:var(--text-muted);">(opcional)</span></label>
+      <div class="cat-select-row">
+        <input type="date" id="f-task-day" style="flex:1;">
+        <button type="button" class="btn-secondary" onclick="setTaskDayToday()">Hoje</button>
+      </div>
+      <p style="font-size:11.5px;color:var(--text-muted);margin:6px 2px 0;">Com um dia marcado, a tarefa aparece em "Hoje" na barra lateral do Cronograma quando chegar a data.</p>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeTaskModal()">Cancelar</button>
